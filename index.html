@@ -1,0 +1,3010 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aetherix Smart Fleet</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+      :root {
+        --primary: #2563eb;
+        --primary-light: #3b82f6;
+        --secondary: #7c3aed;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --dark: #1e293b;
+        --light: #f8fafc;
+        --gray: #94a3b8;
+        --card-bg: #ffffff;
+        --body-bg: #f1f5f9;
+      }
+
+      [data-theme="dark"] {
+        --primary: #3b82f6;
+        --primary-light: #60a5fa;
+        --secondary: #8b5cf6;
+        --success: #34d399;
+        --warning: #fbbf24;
+        --danger: #f87171;
+        --dark: #f8fafc;
+        --light: #1e293b;
+        --gray: #64748b;
+        --card-bg: #1e293b;
+        --body-bg: #0f172a;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: var(--body-bg);
+        color: var(--dark);
+        transition: all 0.3s ease;
+      }
+
+      /* Sidebar Estilizado */
+      .sidebar {
+        background: linear-gradient(180deg, var(--primary), var(--secondary));
+        color: white;
+        height: 100vh;
+        position: fixed;
+        width: 280px;
+        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        transition: all 0.3s ease;
+      }
+
+      .sidebar .nav-link {
+        color: rgba(255, 255, 255, 0.8);
+        padding: 12px 20px;
+        margin: 5px 10px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+      }
+
+      .sidebar .nav-link:hover,
+      .sidebar .nav-link.active {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        transform: translateX(5px);
+      }
+
+      .sidebar .nav-link i {
+        margin-right: 10px;
+        font-size: 1.1rem;
+      }
+
+      /* Main Content */
+      .main-content {
+        margin-left: 280px;
+        padding: 30px;
+        transition: all 0.3s ease;
+      }
+
+      /* Cards Modernas */
+      .card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        background-color: var(--card-bg);
+      }
+
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Botones Flotantes */
+      .btn-float {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+        z-index: 100;
+        transition: all 0.3s ease;
+      }
+
+      .btn-float:hover {
+        transform: scale(1.1);
+      }
+
+      /* Animaciones */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .fade-in {
+        animation: fadeIn 0.5s ease forwards;
+      }
+
+      /* Modales Elegantes */
+      .modal-custom {
+        border-radius: 16px;
+        overflow: hidden;
+        border: none;
+      }
+
+      .modal-custom .modal-header {
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        color: white;
+      }
+
+      /* Tabs Interactivas */
+      .nav-tabs .nav-link {
+        border: none;
+        color: var(--gray);
+        font-weight: 500;
+        padding: 12px 20px;
+      }
+
+      .nav-tabs .nav-link.active {
+        color: var(--primary);
+        border-bottom: 3px solid var(--primary);
+      }
+
+      /* Map Styles */
+      #historicMap {
+        height: 500px;
+        border-radius: 12px;
+        overflow: hidden;
+      }
+
+      /* Badges */
+      .badge-pill {
+        border-radius: 20px;
+        padding: 6px 12px;
+        font-weight: 500;
+      }
+
+      /* Tooltips Personalizados */
+      .tooltip-custom {
+        font-family: "Inter", sans-serif;
+        font-size: 0.9rem;
+      }
+
+      /* Dark Mode Toggle */
+      .theme-toggle {
+        width: 50px;
+        height: 26px;
+        background: var(--gray);
+        border-radius: 50px;
+        position: relative;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .theme-toggle.active {
+        background: var(--primary);
+      }
+
+      .theme-toggle .toggle-thumb {
+        width: 20px;
+        height: 20px;
+        background: white;
+        border-radius: 50%;
+        position: absolute;
+        top: 3px;
+        left: 3px;
+        transition: all 0.3s ease;
+      }
+
+      .theme-toggle.active .toggle-thumb {
+        left: 27px;
+      }
+
+      /* Sensor indicators */
+      .sensor-indicator {
+        height: 12px;
+        width: 12px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 5px;
+      }
+
+      .sensor-normal {
+        background-color: var(--success);
+      }
+
+      .sensor-warning {
+        background-color: var(--warning);
+      }
+
+      .sensor-danger {
+        background-color: var(--danger);
+      }
+
+      /* Sensor chart */
+      .sensor-chart {
+        height: 120px;
+      }
+
+      /* KPI Cards */
+      .kpi-card {
+        text-align: center;
+        padding: 20px;
+        border-radius: 12px;
+        background-color: var(--card-bg);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+      }
+
+      .kpi-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      }
+
+      .kpi-value {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin: 10px 0;
+      }
+
+      .kpi-title {
+        font-size: 0.9rem;
+        color: var(--gray);
+      }
+
+      /* Maintenance timeline */
+      .timeline {
+        position: relative;
+        padding-left: 30px;
+        margin-top: 20px;
+      }
+
+      .timeline::before {
+        content: "";
+        position: absolute;
+        left: 10px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background-color: var(--gray);
+        opacity: 0.3;
+      }
+
+      .timeline-item {
+        position: relative;
+        margin-bottom: 20px;
+      }
+
+      .timeline-dot {
+        position: absolute;
+        left: -30px;
+        top: 5px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 0.7rem;
+      }
+
+      .timeline-content {
+        background: var(--card-bg);
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="d-flex flex-column h-100">
+        <div class="p-4 text-center">
+          <h3 class="mb-0">
+            <img src="Aetherix_logo.png" alt="" style="width: 20%" /> Aetherix
+            AI
+          </h3>
+          <small class="text-white-50">Predictive Maintenance v2.0</small>
+        </div>
+        <nav class="flex-grow-1 mt-3">
+          <ul class="nav flex-column">
+            <li class="nav-item">
+              <a
+                class="nav-link active"
+                href="#"
+                data-bs-toggle="tooltip"
+                data-bs-placement="right"
+                title="Dashboard Principal"
+                data-view="dashboardContent"
+              >
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" data-view="trailerAnalysisView">
+                <i class="fas fa-search"></i> Análisis por Unidad
+              </a>
+            </li>
+            <li class="nav-item">
+              <a
+                class="nav-link"
+                href="#"
+                data-view="predictiveMaintenanceView"
+              >
+                <i class="fas fa-robot"></i> IA Predictiva
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" data-view="maintenanceHistoryView">
+                <i class="fas fa-history"></i> Historial
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" data-view="routeHistoryView">
+                <i class="fas fa-map-marked-alt"></i> Rutas Históricas
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" data-view="inventoryView">
+                <i class="fas fa-boxes"></i> Inventario
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" data-view="techniciansView">
+                <i class="fas fa-users-cog"></i> Técnicos
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" data-view="reportsView">
+                <i class="fas fa-file-export"></i> Reportes
+              </a>
+            </li>
+          </ul>
+        </nav>
+        <div class="p-3 text-center">
+          <div class="d-flex align-items-center justify-content-center mb-3">
+            <span class="me-2">Modo Claro</span>
+            <div class="theme-toggle" id="themeToggle">
+              <div class="toggle-thumb"></div>
+            </div>
+            <span class="ms-2">Modo Oscuro</span>
+          </div>
+          <small class="text-white-50">© 2025 Aetherix AI</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="mb-0">
+          <i class="fas fa-tachometer-alt me-2"></i> Dashboard Predictivo
+        </h2>
+        <div class="d-flex align-items-center">
+          <div class="input-group me-3" style="width: 300px">
+            <span class="input-group-text"><i class="fas fa-search"></i></span>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="Buscar tráiler..."
+              id="searchTrailer"
+            />
+            <button class="btn btn-primary" type="button" id="searchBtn">
+              Buscar
+            </button>
+          </div>
+          <div class="dropdown">
+            <button
+              class="btn btn-outline-secondary dropdown-toggle"
+              type="button"
+              id="filterDropdown"
+              data-bs-toggle="dropdown"
+            >
+              <i class="fas fa-filter me-1"></i> Filtros
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><h6 class="dropdown-header">Estado</h6></li>
+              <li>
+                <a
+                  class="dropdown-item filter-status"
+                  data-status="active"
+                  href="#"
+                  ><i class="fas fa-circle text-success me-2"></i> Activos</a
+                >
+              </li>
+              <li>
+                <a
+                  class="dropdown-item filter-status"
+                  data-status="maintenance"
+                  href="#"
+                  ><i class="fas fa-circle text-warning me-2"></i> En
+                  Mantenimiento</a
+                >
+              </li>
+              <li>
+                <a
+                  class="dropdown-item filter-status"
+                  data-status="inactive"
+                  href="#"
+                  ><i class="fas fa-circle text-danger me-2"></i> Inactivos</a
+                >
+              </li>
+              <li><hr class="dropdown-divider" /></li>
+              <li><h6 class="dropdown-header">Ubicación</h6></li>
+              <li>
+                <a
+                  class="dropdown-item filter-location"
+                  data-location="MX"
+                  href="#"
+                  ><i class="fas fa-map-marker-alt me-2"></i> México</a
+                >
+              </li>
+              <li>
+                <a
+                  class="dropdown-item filter-location"
+                  data-location="US"
+                  href="#"
+                  ><i class="fas fa-map-marker-alt me-2"></i> EE.UU.</a
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashboard Content (Dynamic based on sidebar selection) -->
+      <div id="dashboardContent">
+        <!-- Default Dashboard View -->
+        <div class="row">
+          <!-- Fleet Health Overview -->
+          <div class="col-lg-8">
+            <div class="card mb-4 fade-in">
+              <div
+                class="card-header d-flex justify-content-between align-items-center"
+              >
+                <h5 class="mb-0">
+                  <i class="fas fa-heartbeat me-2"></i> Salud de la Flotilla
+                </h5>
+                <div class="dropdown">
+                  <button
+                    class="btn btn-sm btn-outline-secondary dropdown-toggle"
+                    type="button"
+                    id="timeRangeDropdown"
+                    data-bs-toggle="dropdown"
+                  >
+                    Últimos 30 días
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end">
+                    <li>
+                      <a class="dropdown-item time-range" data-days="7" href="#"
+                        >Últimos 7 días</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item time-range active"
+                        data-days="30"
+                        href="#"
+                        >Últimos 30 días</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item time-range"
+                        data-days="90"
+                        href="#"
+                        >Últimos 90 días</a
+                      >
+                    </li>
+                    <li>
+                      <a
+                        class="dropdown-item time-range"
+                        data-days="365"
+                        href="#"
+                        >Este año</a
+                      >
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="row mb-4">
+                  <div class="col-md-4">
+                    <div class="d-flex align-items-center">
+                      <div class="me-3">
+                        <div
+                          class="bg-primary bg-opacity-10 p-3 rounded-circle"
+                        >
+                          <i class="fas fa-truck text-primary fs-4"></i>
+                        </div>
+                      </div>
+                      <div>
+                        <h3 class="mb-0" id="activeTrailers">142</h3>
+                        <small class="text-muted">Tráileres Activos</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="d-flex align-items-center">
+                      <div class="me-3">
+                        <div
+                          class="bg-success bg-opacity-10 p-3 rounded-circle"
+                        >
+                          <i class="fas fa-check-circle text-success fs-4"></i>
+                        </div>
+                      </div>
+                      <div>
+                        <h3 class="mb-0" id="availabilityRate">94.7%</h3>
+                        <small class="text-muted">Disponibilidad</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="d-flex align-items-center">
+                      <div class="me-3">
+                        <div class="bg-danger bg-opacity-10 p-3 rounded-circle">
+                          <i
+                            class="fas fa-exclamation-triangle text-danger fs-4"
+                          ></i>
+                        </div>
+                      </div>
+                      <div>
+                        <h3 class="mb-0" id="criticalAlerts">8</h3>
+                        <small class="text-muted">Alertas Críticas</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div id="fleetHealthChart" style="height: 300px"></div>
+              </div>
+            </div>
+
+            <!-- Predictive Alerts -->
+            <div class="card mb-4 fade-in">
+              <div class="card-header">
+                <h5 class="mb-0">
+                  <i class="fas fa-robot me-2"></i> Alertas Predictivas
+                </h5>
+              </div>
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table table-hover" id="predictiveAlertsTable">
+                    <thead>
+                      <tr>
+                        <th>Tráiler</th>
+                        <th>Componente</th>
+                        <th>Riesgo</th>
+                        <th>Predicción</th>
+                        <th>Recomendación</th>
+                        <th>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <!-- Filled by JavaScript -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Sidebar -->
+          <div class="col-lg-4">
+            <!-- Maintenance Cost Savings -->
+            <div class="card mb-4 fade-in">
+              <div class="card-header">
+                <h5 class="mb-0">
+                  <i class="fas fa-chart-pie me-2"></i> Ahorros por
+                  Mantenimiento
+                </h5>
+              </div>
+              <div class="card-body">
+                <div id="costSavingsChart" style="height: 250px"></div>
+                <div class="mt-3">
+                  <div class="d-flex justify-content-between mb-2">
+                    <span>Correctivo Evitado</span>
+                    <strong id="avoidedCost">$18,240</strong>
+                  </div>
+                  <div class="d-flex justify-content-between mb-2">
+                    <span>Reducción de Tiempo Muerto</span>
+                    <strong id="downtimeReduction">$9,750</strong>
+                  </div>
+                  <div class="d-flex justify-content-between mb-2">
+                    <span>Optimización de Inventario</span>
+                    <strong id="inventoryOptimization">$3,420</strong>
+                  </div>
+                  <div
+                    class="d-flex justify-content-between mt-3 pt-2 border-top"
+                  >
+                    <span class="fw-bold">Total Ahorrado (30 días)</span>
+                    <strong class="text-success" id="totalSavings"
+                      >$31,410</strong
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Maintenance -->
+            <div class="card mb-4 fade-in">
+              <div class="card-header">
+                <h5 class="mb-0">
+                  <i class="fas fa-wrench me-2"></i> Mantenimientos Recientes
+                </h5>
+              </div>
+              <div class="card-body">
+                <div
+                  class="list-group list-group-flush"
+                  id="recentMaintenanceList"
+                >
+                  <!-- Filled by JavaScript -->
+                </div>
+                <a
+                  href="#"
+                  class="btn btn-outline-primary w-100 mt-3"
+                  id="viewAllMaintenance"
+                  >Ver Todos</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fleet Overview -->
+        <div class="row">
+          <div class="col-12">
+            <div class="card fade-in">
+              <div class="card-header">
+                <h5 class="mb-0">
+                  <i class="fas fa-truck me-2"></i> Resumen de Flotilla
+                </h5>
+              </div>
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table table-hover" id="fleetTable">
+                    <thead>
+                      <tr>
+                        <th>ID Tráiler</th>
+                        <th>Modelo</th>
+                        <th>Ubicación</th>
+                        <th>Estado</th>
+                        <th>Salud</th>
+                        <th>Último Mant.</th>
+                        <th>Próximo Mant.</th>
+                        <th>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody id="fleetTableBody">
+                      <!-- Filled by JavaScript -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trailer Analysis View -->
+      <div id="trailerAnalysisView" style="display: none">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h2><i class="fas fa-search me-2"></i> Análisis por Unidad</h2>
+          <div>
+            <select class="form-select" id="trailerSelect">
+              <option value="">Seleccionar tráiler...</option>
+              <!-- Filled by JavaScript -->
+            </select>
+          </div>
+        </div>
+
+        <div id="trailerAnalysisContent">
+          <div class="alert alert-info">
+            Seleccione un tráiler para ver su análisis detallado
+          </div>
+        </div>
+      </div>
+
+      <!-- Predictive Maintenance View -->
+      <div id="predictiveMaintenanceView" style="display: none">
+        <h2 class="mb-4"><i class="fas fa-robot me-2"></i> IA Predictiva</h2>
+
+        <div class="row mb-4">
+          <div class="col-md-3">
+            <div class="kpi-card">
+              <i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i>
+              <div class="kpi-value">12</div>
+              <div class="kpi-title">Alertas Críticas</div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="kpi-card">
+              <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+              <div class="kpi-value">18</div>
+              <div class="kpi-title">Mantenimientos Pendientes</div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="kpi-card">
+              <i class="fas fa-dollar-sign fa-2x text-success mb-2"></i>
+              <div class="kpi-value">$42K</div>
+              <div class="kpi-title">Ahorro Estimado</div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="kpi-card">
+              <i class="fas fa-percentage fa-2x text-primary mb-2"></i>
+              <div class="kpi-value">93%</div>
+              <div class="kpi-title">Precisión del Modelo</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="mb-0">Predicciones de Fallas</h5>
+          </div>
+          <div class="card-body">
+            <div id="failurePredictionsChart" style="height: 350px"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Recomendaciones de Mantenimiento</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Tráiler</th>
+                    <th>Componente</th>
+                    <th>Probabilidad de Falla</th>
+                    <th>Tiempo Estimado</th>
+                    <th>Recomendación</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>#MX-5482</td>
+                    <td>Sistema de Frenos</td>
+                    <td>
+                      <div class="progress" style="height: 10px">
+                        <div
+                          class="progress-bar bg-danger"
+                          style="width: 87%"
+                        ></div>
+                      </div>
+                      <small>87%</small>
+                    </td>
+                    <td>7-10 días</td>
+                    <td>Reemplazar balatas</td>
+                    <td>
+                      <button class="btn btn-sm btn-primary">Programar</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>#US-9821</td>
+                    <td>Transmisión</td>
+                    <td>
+                      <div class="progress" style="height: 10px">
+                        <div
+                          class="progress-bar bg-warning"
+                          style="width: 65%"
+                        ></div>
+                      </div>
+                      <small>65%</small>
+                    </td>
+                    <td>15-20 días</td>
+                    <td>Cambio de aceite</td>
+                    <td>
+                      <button class="btn btn-sm btn-primary">Programar</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>#MX-3476</td>
+                    <td>Neumáticos</td>
+                    <td>
+                      <div class="progress" style="height: 10px">
+                        <div
+                          class="progress-bar bg-warning"
+                          style="width: 58%"
+                        ></div>
+                      </div>
+                      <small>58%</small>
+                    </td>
+                    <td>30 días</td>
+                    <td>Rotación de llantas</td>
+                    <td>
+                      <button class="btn btn-sm btn-primary">Programar</button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>#US-1287</td>
+                    <td>Suspensión</td>
+                    <td>
+                      <div class="progress" style="height: 10px">
+                        <div
+                          class="progress-bar bg-info"
+                          style="width: 42%"
+                        ></div>
+                      </div>
+                      <small>42%</small>
+                    </td>
+                    <td>45-60 días</td>
+                    <td>Inspección</td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-secondary">
+                        Monitorear
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Maintenance History View -->
+      <div id="maintenanceHistoryView" style="display: none">
+        <h2 class="mb-4">
+          <i class="fas fa-history me-2"></i> Historial de Mantenimiento
+        </h2>
+
+        <div class="row mb-4">
+          <div class="col-md-8">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">Historial por Tráiler</h5>
+              </div>
+              <div class="card-body">
+                <div id="maintenanceHistoryChart" style="height: 300px"></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">Distribución de Mantenimiento</h5>
+              </div>
+              <div class="card-body">
+                <div
+                  id="maintenanceDistributionChart"
+                  style="height: 300px"
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div
+            class="card-header d-flex justify-content-between align-items-center"
+          >
+            <h5 class="mb-0">Registros de Mantenimiento</h5>
+            <div>
+              <button class="btn btn-sm btn-outline-primary me-2">
+                <i class="fas fa-file-export me-1"></i> Exportar
+              </button>
+              <button class="btn btn-sm btn-primary">
+                <i class="fas fa-filter me-1"></i> Filtrar
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Tráiler</th>
+                    <th>Tipo</th>
+                    <th>Descripción</th>
+                    <th>Técnico</th>
+                    <th>Duración</th>
+                    <th>Costo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>15/06/2023</td>
+                    <td>#MX-5482</td>
+                    <td><span class="badge bg-info">Preventivo</span></td>
+                    <td>Cambio de aceite y filtros</td>
+                    <td>Carlos Mendoza</td>
+                    <td>2.5 hrs</td>
+                    <td>$320</td>
+                  </tr>
+                  <tr>
+                    <td>10/06/2023</td>
+                    <td>#US-9821</td>
+                    <td><span class="badge bg-warning">Predictivo</span></td>
+                    <td>Ajuste de transmisión</td>
+                    <td>Roberto Sánchez</td>
+                    <td>4 hrs</td>
+                    <td>$560</td>
+                  </tr>
+                  <tr>
+                    <td>05/06/2023</td>
+                    <td>#MX-3476</td>
+                    <td><span class="badge bg-danger">Correctivo</span></td>
+                    <td>Reparación de suspensión</td>
+                    <td>Juan Pérez</td>
+                    <td>8 hrs</td>
+                    <td>$1,240</td>
+                  </tr>
+                  <tr>
+                    <td>01/06/2023</td>
+                    <td>#US-1287</td>
+                    <td><span class="badge bg-info">Preventivo</span></td>
+                    <td>Rotación de neumáticos</td>
+                    <td>Miguel Torres</td>
+                    <td>3 hrs</td>
+                    <td>$280</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Route History View -->
+      <div id="routeHistoryView" style="display: none">
+        <h2 class="mb-4">
+          <i class="fas fa-map-marked-alt me-2"></i> Rutas Históricas
+        </h2>
+
+        <div class="row mb-4">
+          <div class="col-md-4">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">Filtrar Rutas</h5>
+              </div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <label class="form-label">Seleccionar Tráiler</label>
+                  <select class="form-select" id="routeTrailerSelect">
+                    <option value="">Todos los tráileres</option>
+                    <!-- Filled by JavaScript -->
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Rango de Fechas</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="routeDateRange"
+                    placeholder="Seleccionar rango"
+                  />
+                </div>
+                <button class="btn btn-primary w-100" id="applyRouteFilter">
+                  <i class="fas fa-filter me-1"></i> Aplicar Filtros
+                </button>
+              </div>
+            </div>
+
+            <div class="card mt-4">
+              <div class="card-header">
+                <h5 class="mb-0">Estadísticas de Ruta</h5>
+              </div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <div class="d-flex justify-content-between">
+                    <span>Distancia Total</span>
+                    <strong>1,842 km</strong>
+                  </div>
+                  <div class="progress mt-1" style="height: 8px">
+                    <div
+                      class="progress-bar bg-primary"
+                      style="width: 100%"
+                    ></div>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <div class="d-flex justify-content-between">
+                    <span>Consumo Promedio</span>
+                    <strong>32.5 L/100km</strong>
+                  </div>
+                  <div class="progress mt-1" style="height: 8px">
+                    <div
+                      class="progress-bar bg-success"
+                      style="width: 85%"
+                    ></div>
+                  </div>
+                </div>
+                <div class="mb-3">
+                  <div class="d-flex justify-content-between">
+                    <span>Velocidad Promedio</span>
+                    <strong>68 km/h</strong>
+                  </div>
+                  <div class="progress mt-1" style="height: 8px">
+                    <div class="progress-bar bg-info" style="width: 75%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="d-flex justify-content-between">
+                    <span>Tiempo en Movimiento</span>
+                    <strong>27.1 hrs</strong>
+                  </div>
+                  <div class="progress mt-1" style="height: 8px">
+                    <div
+                      class="progress-bar bg-warning"
+                      style="width: 90%"
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-8">
+            <div class="card h-100">
+              <div class="card-header">
+                <h5 class="mb-0">Mapa de Rutas</h5>
+              </div>
+              <div class="card-body">
+                <div id="historicMap"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Historial de Viajes</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Tráiler</th>
+                    <th>Origen</th>
+                    <th>Destino</th>
+                    <th>Fecha Inicio</th>
+                    <th>Fecha Fin</th>
+                    <th>Distancia</th>
+                    <th>Duración</th>
+                    <th>Incidentes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>#MX-5482</td>
+                    <td>Monterrey, MX</td>
+                    <td>Laredo, TX</td>
+                    <td>10/06/2023</td>
+                    <td>12/06/2023</td>
+                    <td>320 km</td>
+                    <td>5.2 hrs</td>
+                    <td>1</td>
+                  </tr>
+                  <tr>
+                    <td>#US-9821</td>
+                    <td>Laredo, TX</td>
+                    <td>San Antonio, TX</td>
+                    <td>08/06/2023</td>
+                    <td>09/06/2023</td>
+                    <td>240 km</td>
+                    <td>3.8 hrs</td>
+                    <td>0</td>
+                  </tr>
+                  <tr>
+                    <td>#MX-3476</td>
+                    <td>Guadalajara, MX</td>
+                    <td>Monterrey, MX</td>
+                    <td>05/06/2023</td>
+                    <td>07/06/2023</td>
+                    <td>890 km</td>
+                    <td>14.5 hrs</td>
+                    <td>2</td>
+                  </tr>
+                  <tr>
+                    <td>#US-1287</td>
+                    <td>Phoenix, AZ</td>
+                    <td>Los Angeles, CA</td>
+                    <td>01/06/2023</td>
+                    <td>03/06/2023</td>
+                    <td>600 km</td>
+                    <td>9.2 hrs</td>
+                    <td>1</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Inventory View -->
+      <div id="inventoryView" style="display: none">
+        <h2 class="mb-4">
+          <i class="fas fa-boxes me-2"></i> Inventario de Refacciones
+        </h2>
+
+        <div class="row mb-4">
+          <div class="col-md-3">
+            <div class="kpi-card">
+              <i class="fas fa-box fa-2x text-primary mb-2"></i>
+              <div class="kpi-value">142</div>
+              <div class="kpi-title">Artículos en Inventario</div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="kpi-card">
+              <i
+                class="fas fa-exclamation-triangle fa-2x text-warning mb-2"
+              ></i>
+              <div class="kpi-value">18</div>
+              <div class="kpi-title">Artículos Bajos</div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="kpi-card">
+              <i class="fas fa-dollar-sign fa-2x text-success mb-2"></i>
+              <div class="kpi-value">$42K</div>
+              <div class="kpi-title">Valor Total</div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="kpi-card">
+              <i class="fas fa-truck-loading fa-2x text-info mb-2"></i>
+              <div class="kpi-value">12</div>
+              <div class="kpi-title">Pedidos Pendientes</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-4">
+          <div
+            class="card-header d-flex justify-content-between align-items-center"
+          >
+            <h5 class="mb-0">Niveles de Inventario</h5>
+            <button class="btn btn-sm btn-primary">
+              <i class="fas fa-plus me-1"></i> Nuevo Artículo
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Código</th>
+                    <th>Descripción</th>
+                    <th>Categoría</th>
+                    <th>Proveedor</th>
+                    <th>Stock Actual</th>
+                    <th>Mínimo</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>BRAKE-001</td>
+                    <td>Balatas para frenos</td>
+                    <td>Frenos</td>
+                    <td>Frenos MX</td>
+                    <td>12</td>
+                    <td>20</td>
+                    <td><span class="badge bg-warning">Bajo</span></td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-primary">
+                        Ordenar
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>OIL-005</td>
+                    <td>Aceite 15W-40</td>
+                    <td>Lubricantes</td>
+                    <td>Lubtec</td>
+                    <td>48</td>
+                    <td>30</td>
+                    <td><span class="badge bg-success">Normal</span></td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-secondary">
+                        Ver
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>FILT-008</td>
+                    <td>Filtro de aire</td>
+                    <td>Filtros</td>
+                    <td>Filtros USA</td>
+                    <td>8</td>
+                    <td>15</td>
+                    <td><span class="badge bg-danger">Crítico</span></td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-primary">
+                        Ordenar
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>TIRE-003</td>
+                    <td>Neumático 295/75R22.5</td>
+                    <td>Neumáticos</td>
+                    <td>Goodyear</td>
+                    <td>22</td>
+                    <td>25</td>
+                    <td><span class="badge bg-warning">Bajo</span></td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-primary">
+                        Ordenar
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">Artículos Más Utilizados</h5>
+              </div>
+              <div class="card-body">
+                <div id="topUsedItemsChart" style="height: 300px"></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">Valor de Inventario por Categoría</h5>
+              </div>
+              <div class="card-body">
+                <div id="inventoryValueChart" style="height: 300px"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Technicians View -->
+      <div id="techniciansView" style="display: none">
+        <h2 class="mb-4">
+          <i class="fas fa-users-cog me-2"></i> Gestión de Técnicos
+        </h2>
+
+        <div class="row mb-4">
+          <div class="col-md-4">
+            <div class="kpi-card">
+              <i class="fas fa-users fa-2x text-primary mb-2"></i>
+              <div class="kpi-value">24</div>
+              <div class="kpi-title">Técnicos Activos</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="kpi-card">
+              <i class="fas fa-tools fa-2x text-warning mb-2"></i>
+              <div class="kpi-value">18</div>
+              <div class="kpi-title">Mantenimientos en Progreso</div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="kpi-card">
+              <i class="fas fa-star fa-2x text-success mb-2"></i>
+              <div class="kpi-value">4.7/5</div>
+              <div class="kpi-title">Calificación Promedio</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-4">
+          <div
+            class="card-header d-flex justify-content-between align-items-center"
+          >
+            <h5 class="mb-0">Técnicos Disponibles</h5>
+            <button class="btn btn-sm btn-primary">
+              <i class="fas fa-plus me-1"></i> Nuevo Técnico
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Especialidad</th>
+                    <th>Certificaciones</th>
+                    <th>Mantenimientos</th>
+                    <th>Disponibilidad</th>
+                    <th>Calificación</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Carlos Mendoza</td>
+                    <td>Motor y Transmisión</td>
+                    <td>5</td>
+                    <td>142</td>
+                    <td><span class="badge bg-success">Disponible</span></td>
+                    <td>
+                      <div>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star-half-alt text-warning"></i>
+                        <span>4.5</span>
+                      </div>
+                    </td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-primary">
+                        Asignar
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Roberto Sánchez</td>
+                    <td>Sistemas Eléctricos</td>
+                    <td>3</td>
+                    <td>98</td>
+                    <td><span class="badge bg-warning">En Trabajo</span></td>
+                    <td>
+                      <div>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <span>5.0</span>
+                      </div>
+                    </td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-secondary" disabled>
+                        Asignar
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Juan Pérez</td>
+                    <td>Frenos y Suspensión</td>
+                    <td>4</td>
+                    <td>112</td>
+                    <td><span class="badge bg-success">Disponible</span></td>
+                    <td>
+                      <div>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="far fa-star text-warning"></i>
+                        <span>4.0</span>
+                      </div>
+                    </td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-primary">
+                        Asignar
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Miguel Torres</td>
+                    <td>Neumáticos y Ruedas</td>
+                    <td>2</td>
+                    <td>86</td>
+                    <td><span class="badge bg-danger">Vacaciones</span></td>
+                    <td>
+                      <div>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <span>5.0</span>
+                      </div>
+                    </td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-secondary" disabled>
+                        Asignar
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">Distribución de Técnicos</h5>
+              </div>
+              <div class="card-body">
+                <div
+                  id="technicianDistributionChart"
+                  style="height: 300px"
+                ></div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header">
+                <h5 class="mb-0">Rendimiento por Técnico</h5>
+              </div>
+              <div class="card-body">
+                <div
+                  id="technicianPerformanceChart"
+                  style="height: 300px"
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reports View -->
+      <div id="reportsView" style="display: none">
+        <h2 class="mb-4"><i class="fas fa-file-export me-2"></i> Reportes</h2>
+
+        <div class="card mb-4">
+          <div class="card-header">
+            <h5 class="mb-0">Generar Nuevo Reporte</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label class="form-label">Tipo de Reporte</label>
+                  <select class="form-select" id="reportType">
+                    <option value="">Seleccionar tipo...</option>
+                    <option value="kpi">KPIs de Mantenimiento</option>
+                    <option value="cost">Análisis de Costos</option>
+                    <option value="fleet">Estado de Flotilla</option>
+                    <option value="inventory">Inventario</option>
+                    <option value="technician">Desempeño de Técnicos</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label class="form-label">Rango de Fechas</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="reportDateRange"
+                    placeholder="Seleccionar rango"
+                  />
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label class="form-label">Formato</label>
+                  <select class="form-select" id="reportFormat">
+                    <option value="pdf">PDF</option>
+                    <option value="excel">Excel</option>
+                    <option value="csv">CSV</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="d-flex justify-content-end">
+              <button class="btn btn-primary" id="generateReport">
+                <i class="fas fa-file-download me-1"></i> Generar Reporte
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h5 class="mb-0">Reportes Recientes</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Nombre del Reporte</th>
+                    <th>Tipo</th>
+                    <th>Fecha de Generación</th>
+                    <th>Rango de Fechas</th>
+                    <th>Formato</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Reporte de Mantenimiento Mensual</td>
+                    <td>KPIs de Mantenimiento</td>
+                    <td>01/06/2023</td>
+                    <td>01/05/2023 - 31/05/2023</td>
+                    <td>PDF</td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-download"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Análisis de Costos Q2</td>
+                    <td>Análisis de Costos</td>
+                    <td>15/05/2023</td>
+                    <td>01/04/2023 - 30/06/2023</td>
+                    <td>Excel</td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-download"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Estado de Flotilla Mayo</td>
+                    <td>Estado de Flotilla</td>
+                    <td>01/06/2023</td>
+                    <td>01/05/2023 - 31/05/2023</td>
+                    <td>PDF</td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-download"></i>
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Inventario Actual</td>
+                    <td>Inventario</td>
+                    <td>28/05/2023</td>
+                    <td>N/A</td>
+                    <td>CSV</td>
+                    <td>
+                      <button class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-download"></i>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <button class="btn btn-primary btn-float" id="addMaintenanceBtn">
+      <i class="fas fa-plus"></i>
+    </button>
+
+    <!-- Trailer Detail Modal -->
+    <div class="modal fade" id="trailerModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content modal-custom">
+          <div class="modal-header">
+            <h5 class="modal-title" id="trailerModalTitle">
+              Detalles del Tráiler
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body" id="trailerModalBody">
+            <!-- Content loaded dynamically -->
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cerrar
+            </button>
+            <button type="button" class="btn btn-primary">
+              Registrar Mantenimiento
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Maintenance Modal -->
+    <div
+      class="modal fade"
+      id="addMaintenanceModal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-custom">
+          <div class="modal-header">
+            <h5 class="modal-title">Registrar Mantenimiento</h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <form id="maintenanceForm">
+              <div class="mb-3">
+                <label class="form-label">Tráiler</label>
+                <select class="form-select" id="trailerSelectModal" required>
+                  <option value="" selected disabled>
+                    Seleccionar tráiler...
+                  </option>
+                  <!-- Filled by JavaScript -->
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Tipo de Mantenimiento</label>
+                <select class="form-select" id="maintenanceType" required>
+                  <option value="" selected disabled>
+                    Seleccionar tipo...
+                  </option>
+                  <option value="preventive">Preventivo</option>
+                  <option value="predictive">Predictivo</option>
+                  <option value="corrective">Correctivo</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Fecha</label>
+                <input
+                  type="date"
+                  class="form-control"
+                  id="maintenanceDate"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Descripción</label>
+                <textarea
+                  class="form-control"
+                  rows="3"
+                  id="maintenanceDescription"
+                  required
+                ></textarea>
+              </div>
+              <div class="mb-3">
+                <label class="form-label">Técnico Asignado</label>
+                <select class="form-select" id="technicianSelect" required>
+                  <option value="" selected disabled>
+                    Seleccionar técnico...
+                  </option>
+                  <option value="1">Carlos Mendoza</option>
+                  <option value="2">Roberto Sánchez</option>
+                  <option value="3">Juan Pérez</option>
+                  <option value="4">Miguel Torres</option>
+                </select>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              Cancelar
+            </button>
+            <button type="button" class="btn btn-primary" id="saveMaintenance">
+              Guardar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Datos dummy para la aplicación
+      const trailers = [
+        {
+          id: "MX-5482",
+          model: "Freightliner 2021",
+          location: "Monterrey, MX",
+          status: "active",
+          health: 78,
+          lastMaintenance: "2023-05-15",
+          nextMaintenance: "2023-08-10",
+          mileage: 185420,
+          fuelEfficiency: 6.8,
+          alerts: 3,
+          sensorData: {
+            brakeTemp: { value: 85, status: "warning" },
+            tirePressure: { value: 95, status: "normal" },
+            engineTemp: { value: 92, status: "normal" },
+            vibration: { value: 4.2, status: "danger" },
+            brakePad: { value: 12, status: "danger" },
+          },
+        },
+        {
+          id: "US-9821",
+          model: "Kenworth T680",
+          location: "Laredo, TX",
+          status: "active",
+          health: 92,
+          lastMaintenance: "2023-06-22",
+          nextMaintenance: "2023-08-18",
+          mileage: 142560,
+          fuelEfficiency: 7.2,
+          alerts: 1,
+          sensorData: {
+            brakeTemp: { value: 75, status: "normal" },
+            tirePressure: { value: 92, status: "normal" },
+            engineTemp: { value: 88, status: "normal" },
+            vibration: { value: 2.8, status: "normal" },
+            brakePad: { value: 28, status: "warning" },
+          },
+        },
+        {
+          id: "MX-3476",
+          model: "International LT",
+          location: "Guadalajara, MX",
+          status: "maintenance",
+          health: 65,
+          lastMaintenance: "2023-05-30",
+          nextMaintenance: "2023-08-25",
+          mileage: 218750,
+          fuelEfficiency: 6.5,
+          alerts: 5,
+          sensorData: {
+            brakeTemp: { value: 95, status: "danger" },
+            tirePressure: { value: 88, status: "warning" },
+            engineTemp: { value: 97, status: "danger" },
+            vibration: { value: 5.8, status: "danger" },
+            brakePad: { value: 8, status: "danger" },
+          },
+        },
+        {
+          id: "US-1287",
+          model: "Volvo VNL 860",
+          location: "Phoenix, AZ",
+          status: "active",
+          health: 88,
+          lastMaintenance: "2023-07-12",
+          nextMaintenance: "2023-09-05",
+          mileage: 156320,
+          fuelEfficiency: 7.0,
+          alerts: 0,
+          sensorData: {
+            brakeTemp: { value: 78, status: "normal" },
+            tirePressure: { value: 94, status: "normal" },
+            engineTemp: { value: 90, status: "normal" },
+            vibration: { value: 3.1, status: "normal" },
+            brakePad: { value: 32, status: "normal" },
+          },
+        },
+      ];
+
+      const predictiveAlerts = [
+        {
+          trailer: "MX-5482",
+          component: "Sistema de Frenos",
+          risk: "Alto (87%)",
+          prediction: "Falla en 7-10 días",
+          recommendation: "Reemplazar balatas",
+        },
+        {
+          trailer: "US-9821",
+          component: "Transmisión",
+          risk: "Medio (65%)",
+          prediction: "Falla en 15-20 días",
+          recommendation: "Cambio de aceite",
+        },
+        {
+          trailer: "MX-3476",
+          component: "Neumáticos",
+          risk: "Medio (58%)",
+          prediction: "Desgaste crítico en 30 días",
+          recommendation: "Rotación de llantas",
+        },
+      ];
+
+      const recentMaintenance = [
+        {
+          trailer: "MX-5482",
+          description: "Cambio de balatas",
+          date: "Hace 2 días",
+          type: "Preventivo",
+        },
+        {
+          trailer: "US-9821",
+          description: "Alineación y balanceo",
+          date: "Hace 5 días",
+          type: "Predictivo",
+        },
+        {
+          trailer: "MX-3476",
+          description: "Cambio de aceite",
+          date: "Hace 1 semana",
+          type: "Preventivo",
+        },
+        {
+          trailer: "US-1287",
+          description: "Reparación de suspensión",
+          date: "Hace 2 semanas",
+          type: "Correctivo",
+        },
+      ];
+
+      // Función para inicializar el dashboard
+      function initDashboard() {
+        // Inicializar gráficos
+        initCharts();
+
+        // Llenar tablas con datos
+        populateFleetTable();
+        populatePredictiveAlerts();
+        populateRecentMaintenance();
+        populateTrailerSelects();
+
+        // Configurar eventos
+        setupEventListeners();
+
+        // Inicializar mapa
+        initMap();
+
+        // Inicializar tooltips de Bootstrap
+        const tooltipTriggerList = [].slice.call(
+          document.querySelectorAll('[data-bs-toggle="tooltip"]')
+        );
+        tooltipTriggerList.map((tooltipTriggerEl) => {
+          return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+      }
+
+      // Inicializar gráficos con ApexCharts
+      function initCharts() {
+        // Gráfico de salud de flotilla (líneas)
+        const fleetHealthChart = new ApexCharts(
+          document.querySelector("#fleetHealthChart"),
+          {
+            series: [
+              {
+                name: "Salud Promedio",
+                data: [
+                  85, 83, 82, 84, 86, 87, 88, 90, 89, 87, 86, 85, 84, 83, 82,
+                  83, 85, 87, 88, 89, 90, 91, 92, 91, 90, 89, 88, 87, 86, 85,
+                ],
+              },
+            ],
+            chart: {
+              height: 300,
+              type: "line",
+              zoom: {
+                enabled: false,
+              },
+              toolbar: {
+                show: false,
+              },
+            },
+            dataLabels: {
+              enabled: false,
+            },
+            stroke: {
+              curve: "smooth",
+              width: 3,
+            },
+            colors: ["#2563eb"],
+            xaxis: {
+              categories: Array.from({ length: 30 }, (_, i) => `${i + 1} Jun`),
+              labels: {
+                style: {
+                  colors: "var(--gray)",
+                },
+              },
+            },
+            yaxis: {
+              min: 75,
+              max: 100,
+              labels: {
+                style: {
+                  colors: "var(--gray)",
+                },
+                formatter: function (val) {
+                  return val + "%";
+                },
+              },
+            },
+            grid: {
+              borderColor: "rgba(0,0,0,0.05)",
+            },
+            tooltip: {
+              theme:
+                document.documentElement.getAttribute("data-theme") || "light",
+            },
+          }
+        );
+        fleetHealthChart.render();
+
+        // Gráfico de ahorros (dona)
+        const costSavingsChart = new ApexCharts(
+          document.querySelector("#costSavingsChart"),
+          {
+            series: [18240, 9750, 3420],
+            chart: {
+              type: "donut",
+              height: 250,
+            },
+            labels: [
+              "Correctivo Evitado",
+              "Reducción Tiempo Muerto",
+              "Optimización Inventario",
+            ],
+            colors: ["#10b981", "#f59e0b", "#3b82f6"],
+            legend: {
+              position: "bottom",
+            },
+            plotOptions: {
+              pie: {
+                donut: {
+                  labels: {
+                    show: true,
+                    total: {
+                      show: true,
+                      label: "Total Ahorro",
+                      formatter: function (w) {
+                        return "$31,410";
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            tooltip: {
+              theme:
+                document.documentElement.getAttribute("data-theme") || "light",
+              y: {
+                formatter: function (value) {
+                  return "$" + value.toLocaleString();
+                },
+              },
+            },
+          }
+        );
+        costSavingsChart.render();
+
+        // Gráfico de predicciones de fallas
+        const failurePredictionsChart = new ApexCharts(
+          document.querySelector("#failurePredictionsChart"),
+          {
+            series: [
+              {
+                name: "Probabilidad de Falla",
+                data: [87, 65, 58, 42, 35, 28, 22],
+              },
+            ],
+            chart: {
+              type: "bar",
+              height: 350,
+              toolbar: {
+                show: false,
+              },
+            },
+            plotOptions: {
+              bar: {
+                borderRadius: 8,
+                horizontal: false,
+                columnWidth: "55%",
+              },
+            },
+            dataLabels: {
+              enabled: false,
+            },
+            colors: ["#ef4444"],
+            xaxis: {
+              categories: [
+                "Frenos",
+                "Transmisión",
+                "Neumáticos",
+                "Suspensión",
+                "Motor",
+                "Eléctrico",
+                "Refrigeración",
+              ],
+              labels: {
+                style: {
+                  colors: "var(--gray)",
+                },
+              },
+            },
+            yaxis: {
+              max: 100,
+              labels: {
+                style: {
+                  colors: "var(--gray)",
+                },
+                formatter: function (val) {
+                  return val + "%";
+                },
+              },
+            },
+            grid: {
+              borderColor: "rgba(0,0,0,0.05)",
+            },
+            tooltip: {
+              theme:
+                document.documentElement.getAttribute("data-theme") || "light",
+            },
+          }
+        );
+        failurePredictionsChart.render();
+
+        // Gráfico de distribución de mantenimiento
+        const maintenanceDistributionChart = new ApexCharts(
+          document.querySelector("#maintenanceDistributionChart"),
+          {
+            series: [65, 25, 10],
+            chart: {
+              type: "donut",
+              height: 300,
+            },
+            labels: ["Preventivo", "Predictivo", "Correctivo"],
+            colors: ["#3b82f6", "#f59e0b", "#ef4444"],
+            legend: {
+              position: "bottom",
+            },
+            tooltip: {
+              theme:
+                document.documentElement.getAttribute("data-theme") || "light",
+              y: {
+                formatter: function (value) {
+                  return value + "%";
+                },
+              },
+            },
+          }
+        );
+        maintenanceDistributionChart.render();
+      }
+
+      // Llenar tabla de flotilla
+      function populateFleetTable() {
+        const tbody = document.getElementById("fleetTableBody");
+        tbody.innerHTML = "";
+
+        trailers.forEach((trailer) => {
+          let statusBadge = "";
+          if (trailer.status === "active") {
+            statusBadge = '<span class="badge bg-success">Activo</span>';
+          } else if (trailer.status === "maintenance") {
+            statusBadge = '<span class="badge bg-warning">En Mant.</span>';
+          } else {
+            statusBadge = '<span class="badge bg-danger">Inactivo</span>';
+          }
+
+          let progressClass = "bg-success";
+          if (trailer.health < 70) {
+            progressClass = "bg-danger";
+          } else if (trailer.health < 85) {
+            progressClass = "bg-warning";
+          }
+
+          const row = `
+                    <tr>
+                        <td>#${trailer.id}</td>
+                        <td>${trailer.model}</td>
+                        <td>${trailer.location}</td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar ${progressClass}" style="width: ${
+            trailer.health
+          }%"></div>
+                            </div>
+                            <small>${trailer.health}%</small>
+                        </td>
+                        <td>${formatDate(trailer.lastMaintenance)}</td>
+                        <td>${formatDate(trailer.nextMaintenance)}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary view-trailer" data-id="${
+                              trailer.id
+                            }">Ver</button>
+                        </td>
+                    </tr>
+                `;
+
+          tbody.innerHTML += row;
+        });
+      }
+
+      // Llenar alertas predictivas
+      function populatePredictiveAlerts() {
+        const tbody = document.querySelector("#predictiveAlertsTable tbody");
+        tbody.innerHTML = "";
+
+        predictiveAlerts.forEach((alert) => {
+          const row = `
+                    <tr>
+                        <td>#${alert.trailer}</td>
+                        <td>${alert.component}</td>
+                        <td><span class="badge bg-danger">${alert.risk}</span></td>
+                        <td>${alert.prediction}</td>
+                        <td>${alert.recommendation}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary">Programar</button>
+                        </td>
+                    </tr>
+                `;
+
+          tbody.innerHTML += row;
+        });
+      }
+
+      // Llenar mantenimientos recientes
+      function populateRecentMaintenance() {
+        const list = document.getElementById("recentMaintenanceList");
+        list.innerHTML = "";
+
+        recentMaintenance.forEach((maintenance) => {
+          let typeBadge = '<span class="badge bg-info ms-2">Preventivo</span>';
+          if (maintenance.type === "Predictivo") {
+            typeBadge = '<span class="badge bg-warning ms-2">Predictivo</span>';
+          } else if (maintenance.type === "Correctivo") {
+            typeBadge = '<span class="badge bg-danger ms-2">Correctivo</span>';
+          }
+
+          const item = `
+                    <div class="list-group-item border-0 px-0 py-2">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <h6 class="mb-1">#${maintenance.trailer}</h6>
+                                <small class="text-muted">${maintenance.description}</small>
+                            </div>
+                            <div class="text-end">
+                                <small class="text-muted">${maintenance.date}</small>
+                                ${typeBadge}
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+          list.innerHTML += item;
+        });
+      }
+
+      // Llenar selects de tráilers
+      function populateTrailerSelects() {
+        const trailerSelect = document.getElementById("trailerSelect");
+        const routeTrailerSelect =
+          document.getElementById("routeTrailerSelect");
+        const trailerSelectModal =
+          document.getElementById("trailerSelectModal");
+
+        // Limpiar selects
+        trailerSelect.innerHTML =
+          '<option value="">Seleccionar tráiler...</option>';
+        routeTrailerSelect.innerHTML =
+          '<option value="">Todos los tráileres</option>';
+        trailerSelectModal.innerHTML =
+          '<option value="" selected disabled>Seleccionar tráiler...</option>';
+
+        // Agregar opciones
+        trailers.forEach((trailer) => {
+          const option = `<option value="${trailer.id}">#${trailer.id} - ${trailer.model}</option>`;
+          trailerSelect.innerHTML += option;
+          routeTrailerSelect.innerHTML += option;
+          trailerSelectModal.innerHTML += option;
+        });
+      }
+
+      // Inicializar mapa de rutas
+      function initMap() {
+        // Coordenadas de ejemplo para Monterrey, México
+        const map = L.map("historicMap").setView([25.6866, -100.3161], 5);
+
+        // Añadir capa de OpenStreetMap
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        }).addTo(map);
+
+        // Añadir marcadores para los tráilers
+        trailers.forEach((trailer) => {
+          // Coordenadas aproximadas basadas en la ubicación
+          let coords;
+          if (trailer.location.includes("Monterrey")) {
+            coords = [25.6866, -100.3161];
+          } else if (trailer.location.includes("Laredo")) {
+            coords = [27.5064, -99.5075];
+          } else if (trailer.location.includes("Guadalajara")) {
+            coords = [20.6597, -103.3496];
+          } else if (trailer.location.includes("Phoenix")) {
+            coords = [33.4484, -112.074];
+          } else {
+            coords = [25.6866, -100.3161];
+          }
+
+          let markerColor = "green";
+          if (trailer.health < 70) {
+            markerColor = "red";
+          } else if (trailer.health < 85) {
+            markerColor = "orange";
+          }
+
+          const icon = L.divIcon({
+            className: "custom-icon",
+            html: `<div style="background-color: ${markerColor}; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white;"></div>`,
+            iconSize: [24, 24],
+          });
+
+          L.marker(coords, { icon: icon })
+            .addTo(map)
+            .bindPopup(
+              `<b>#${trailer.id}</b><br>${trailer.model}<br>Salud: ${trailer.health}%`
+            );
+        });
+      }
+
+      // Formatear fecha
+      function formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString("es-MX", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+        });
+      }
+
+      // Configurar eventos
+      function setupEventListeners() {
+        // Cambio de tema (claro/oscuro)
+        document
+          .getElementById("themeToggle")
+          .addEventListener("click", toggleTheme);
+
+        // Navegación del sidebar
+        document.querySelectorAll(".sidebar .nav-link").forEach((link) => {
+          link.addEventListener("click", function (e) {
+            e.preventDefault();
+
+            // Actualizar clase activa
+            document.querySelectorAll(".sidebar .nav-link").forEach((item) => {
+              item.classList.remove("active");
+            });
+            this.classList.add("active");
+
+            // Mostrar vista correspondiente
+            const viewId = this.getAttribute("data-view");
+            showView(viewId);
+          });
+        });
+
+        // Botones "Ver" en la tabla de flotilla
+        document.querySelectorAll(".view-trailer").forEach((button) => {
+          button.addEventListener("click", function () {
+            const trailerId = this.getAttribute("data-id");
+            showTrailerDetails(trailerId);
+          });
+        });
+
+        // Botón flotante para añadir mantenimiento
+        document
+          .getElementById("addMaintenanceBtn")
+          .addEventListener("click", function () {
+            const modal = new bootstrap.Modal(
+              document.getElementById("addMaintenanceModal")
+            );
+            modal.show();
+          });
+
+        // Guardar mantenimiento
+        document
+          .getElementById("saveMaintenance")
+          .addEventListener("click", function () {
+            const form = document.getElementById("maintenanceForm");
+            if (form.checkValidity()) {
+              // Aquí iría la lógica para guardar el mantenimiento
+              alert("Mantenimiento registrado exitosamente!");
+
+              const modal = bootstrap.Modal.getInstance(
+                document.getElementById("addMaintenanceModal")
+              );
+              modal.hide();
+            } else {
+              form.reportValidity();
+            }
+          });
+
+        // Buscar tráiler
+        document
+          .getElementById("searchBtn")
+          .addEventListener("click", searchTrailer);
+        document
+          .getElementById("searchTrailer")
+          .addEventListener("keypress", function (e) {
+            if (e.key === "Enter") {
+              searchTrailer();
+            }
+          });
+
+        // Filtrar por estado
+        document.querySelectorAll(".filter-status").forEach((item) => {
+          item.addEventListener("click", function (e) {
+            e.preventDefault();
+            filterByStatus(this.getAttribute("data-status"));
+          });
+        });
+
+        // Filtrar por ubicación
+        document.querySelectorAll(".filter-location").forEach((item) => {
+          item.addEventListener("click", function (e) {
+            e.preventDefault();
+            filterByLocation(this.getAttribute("data-location"));
+          });
+        });
+
+        // Cambiar rango de tiempo
+        document.querySelectorAll(".time-range").forEach((item) => {
+          item.addEventListener("click", function (e) {
+            e.preventDefault();
+            changeTimeRange(this.getAttribute("data-days"));
+          });
+        });
+
+        // Ver todos los mantenimientos
+        document
+          .getElementById("viewAllMaintenance")
+          .addEventListener("click", function (e) {
+            e.preventDefault();
+            document
+              .querySelector(
+                '.sidebar .nav-link[data-view="maintenanceHistoryView"]'
+              )
+              .click();
+          });
+
+        // Selección de tráiler en análisis por unidad
+        document
+          .getElementById("trailerSelect")
+          .addEventListener("change", function () {
+            const trailerId = this.value;
+            if (trailerId) {
+              showTrailerAnalysis(trailerId);
+            } else {
+              document.getElementById("trailerAnalysisContent").innerHTML = `
+                        <div class="alert alert-info">
+                            Seleccione un tráiler para ver su análisis detallado
+                        </div>
+                    `;
+            }
+          });
+      }
+
+      // Cambiar entre temas claro y oscuro
+      function toggleTheme() {
+        const themeToggle = document.getElementById("themeToggle");
+        const currentTheme =
+          document.documentElement.getAttribute("data-theme") || "light";
+
+        if (currentTheme === "light") {
+          document.documentElement.setAttribute("data-theme", "dark");
+          themeToggle.classList.add("active");
+        } else {
+          document.documentElement.removeAttribute("data-theme");
+          themeToggle.classList.remove("active");
+        }
+
+        // Actualizar gráficos para que respeten el tema
+        initCharts();
+      }
+
+      // Mostrar vista específica
+      function showView(viewId) {
+        // Ocultar todas las vistas
+        document
+          .querySelectorAll(
+            "#dashboardContent, #trailerAnalysisView, #predictiveMaintenanceView, #maintenanceHistoryView, #routeHistoryView, #inventoryView, #techniciansView, #reportsView"
+          )
+          .forEach((view) => {
+            view.style.display = "none";
+          });
+
+        // Mostrar la vista seleccionada
+        document.getElementById(viewId).style.display = "block";
+
+        // Si es la vista de rutas, inicializar el mapa
+        if (viewId === "routeHistoryView") {
+          initMap();
+        }
+      }
+
+      // Mostrar detalles del tráiler en modal
+      function showTrailerDetails(trailerId) {
+        const trailer = trailers.find((t) => t.id === trailerId);
+        if (!trailer) return;
+
+        // Actualizar título del modal
+        document.getElementById(
+          "trailerModalTitle"
+        ).textContent = `Detalles de #${trailer.id}`;
+
+        // Construir contenido del modal
+        let sensorStatus = "";
+        for (const [key, sensor] of Object.entries(trailer.sensorData)) {
+          let sensorName = "";
+          let unit = "";
+
+          switch (key) {
+            case "brakeTemp":
+              sensorName = "Temperatura de Frenos";
+              unit = "°C";
+              break;
+            case "tirePressure":
+              sensorName = "Presión de Neumáticos";
+              unit = "PSI";
+              break;
+            case "engineTemp":
+              sensorName = "Temperatura de Motor";
+              unit = "°C";
+              break;
+            case "vibration":
+              sensorName = "Vibración";
+              unit = "mm/s";
+              break;
+            case "brakePad":
+              sensorName = "Desgaste de Balatas";
+              unit = "%";
+              break;
+          }
+
+          sensorStatus += `
+                    <div class="row mb-2">
+                        <div class="col-6">
+                            <div class="d-flex align-items-center">
+                                <span class="sensor-indicator sensor-${
+                                  sensor.status
+                                }"></span>
+                                <span>${sensorName}</span>
+                            </div>
+                        </div>
+                        <div class="col-3 text-end">
+                            ${sensor.value}${unit}
+                        </div>
+                        <div class="col-3">
+                            <span class="badge bg-${
+                              sensor.status === "normal"
+                                ? "success"
+                                : sensor.status === "warning"
+                                ? "warning"
+                                : "danger"
+                            }">
+                                ${
+                                  sensor.status === "normal"
+                                    ? "Normal"
+                                    : sensor.status === "warning"
+                                    ? "Advertencia"
+                                    : "Crítico"
+                                }
+                            </span>
+                        </div>
+                    </div>
+                `;
+        }
+
+        const content = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Modelo</label>
+                            <p class="fw-bold">${trailer.model}</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Ubicación</label>
+                            <p class="fw-bold">${trailer.location}</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Kilometraje</label>
+                            <p class="fw-bold">${trailer.mileage.toLocaleString()} km</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Último Mantenimiento</label>
+                            <p class="fw-bold">${formatDate(
+                              trailer.lastMaintenance
+                            )}</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Próximo Mantenimiento</label>
+                            <p class="fw-bold">${formatDate(
+                              trailer.nextMaintenance
+                            )}</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Eficiencia de Combustible</label>
+                            <p class="fw-bold">${
+                              trailer.fuelEfficiency
+                            } km/L</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <h5><i class="fas fa-microchip me-2"></i> Estado de Sensores</h5>
+                    <div class="mt-3">
+                        ${sensorStatus}
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <h5><i class="fas fa-chart-line me-2"></i> Tendencia de Salud</h5>
+                    <div class="mt-3" id="trailerHealthChart" style="height: 200px;"></div>
+                </div>
+            `;
+
+        document.getElementById("trailerModalBody").innerHTML = content;
+
+        // Mostrar modal
+        const modal = new bootstrap.Modal(
+          document.getElementById("trailerModal")
+        );
+        modal.show();
+
+        // Inicializar gráfico de salud del tráiler
+        const trailerHealthChart = new ApexCharts(
+          document.querySelector("#trailerHealthChart"),
+          {
+            series: [
+              {
+                name: "Salud",
+                data: [
+                  85, 83, 80, 78, 76, 74, 72, 70, 72, 75, 78, 80, 82, 80, 78,
+                  76, 75, 76, 78, 80,
+                ],
+              },
+            ],
+            chart: {
+              height: 200,
+              type: "line",
+              zoom: {
+                enabled: false,
+              },
+              toolbar: {
+                show: false,
+              },
+            },
+            dataLabels: {
+              enabled: false,
+            },
+            stroke: {
+              curve: "smooth",
+              width: 3,
+            },
+            colors: [
+              trailer.health < 70
+                ? "#ef4444"
+                : trailer.health < 85
+                ? "#f59e0b"
+                : "#10b981",
+            ],
+            xaxis: {
+              categories: Array.from({ length: 20 }, (_, i) => `${i + 1} May`),
+              labels: {
+                style: {
+                  colors: "var(--gray)",
+                },
+              },
+            },
+            yaxis: {
+              min: 60,
+              max: 100,
+              labels: {
+                style: {
+                  colors: "var(--gray)",
+                },
+                formatter: function (val) {
+                  return val + "%";
+                },
+              },
+            },
+            grid: {
+              borderColor: "rgba(0,0,0,0.05)",
+            },
+            tooltip: {
+              theme:
+                document.documentElement.getAttribute("data-theme") || "light",
+            },
+          }
+        );
+        trailerHealthChart.render();
+      }
+
+      // Mostrar análisis de tráiler específico
+      function showTrailerAnalysis(trailerId) {
+        const trailer = trailers.find((t) => t.id === trailerId);
+        if (!trailer) return;
+
+        const content = `
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 text-center">
+                                <div class="mb-3">
+                                    <i class="fas fa-truck fa-3x text-primary"></i>
+                                </div>
+                                <h3>#${trailer.id}</h3>
+                                <p class="text-muted">${trailer.model}</p>
+                            </div>
+                            <div class="col-md-9">
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <div class="text-center">
+                                            <div class="fs-1 fw-bold">${
+                                              trailer.health
+                                            }%</div>
+                                            <div class="text-muted">Salud</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="text-center">
+                                            <div class="fs-1 fw-bold">${trailer.mileage.toLocaleString()}</div>
+                                            <div class="text-muted">Kilómetros</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="text-center">
+                                            <div class="fs-1 fw-bold">${
+                                              trailer.alerts
+                                            }</div>
+                                            <div class="text-muted">Alertas</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="text-center">
+                                            <div class="fs-1 fw-bold">${
+                                              trailer.fuelEfficiency
+                                            }</div>
+                                            <div class="text-muted">km/L</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Estado de Sensores</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Temperatura de Frenos</span>
+                                        <span><strong>${
+                                          trailer.sensorData.brakeTemp.value
+                                        }°C</strong> 
+                                            <span class="badge bg-${
+                                              trailer.sensorData.brakeTemp
+                                                .status === "normal"
+                                                ? "success"
+                                                : trailer.sensorData.brakeTemp
+                                                    .status === "warning"
+                                                ? "warning"
+                                                : "danger"
+                                            }">
+                                                ${
+                                                  trailer.sensorData.brakeTemp
+                                                    .status === "normal"
+                                                    ? "Normal"
+                                                    : trailer.sensorData
+                                                        .brakeTemp.status ===
+                                                      "warning"
+                                                    ? "Advertencia"
+                                                    : "Crítico"
+                                                }
+                                            </span>
+                                        </span>
+                                    </div>
+                                    <div class="progress mt-2" style="height: 8px;">
+                                        <div class="progress-bar bg-${
+                                          trailer.sensorData.brakeTemp
+                                            .status === "normal"
+                                            ? "success"
+                                            : trailer.sensorData.brakeTemp
+                                                .status === "warning"
+                                            ? "warning"
+                                            : "danger"
+                                        }" 
+                                            style="width: ${
+                                              trailer.sensorData.brakeTemp.value
+                                            }%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Presión de Neumáticos</span>
+                                        <span><strong>${
+                                          trailer.sensorData.tirePressure.value
+                                        } PSI</strong> 
+                                            <span class="badge bg-${
+                                              trailer.sensorData.tirePressure
+                                                .status === "normal"
+                                                ? "success"
+                                                : trailer.sensorData
+                                                    .tirePressure.status ===
+                                                  "warning"
+                                                ? "warning"
+                                                : "danger"
+                                            }">
+                                                ${
+                                                  trailer.sensorData
+                                                    .tirePressure.status ===
+                                                  "normal"
+                                                    ? "Normal"
+                                                    : trailer.sensorData
+                                                        .tirePressure.status ===
+                                                      "warning"
+                                                    ? "Advertencia"
+                                                    : "Crítico"
+                                                }
+                                            </span>
+                                        </span>
+                                    </div>
+                                    <div class="progress mt-2" style="height: 8px;">
+                                        <div class="progress-bar bg-${
+                                          trailer.sensorData.tirePressure
+                                            .status === "normal"
+                                            ? "success"
+                                            : trailer.sensorData.tirePressure
+                                                .status === "warning"
+                                            ? "warning"
+                                            : "danger"
+                                        }" 
+                                            style="width: ${
+                                              trailer.sensorData.tirePressure
+                                                .value
+                                            }%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between">
+                                        <span>Desgaste de Balatas</span>
+                                        <span><strong>${
+                                          trailer.sensorData.brakePad.value
+                                        }%</strong> 
+                                            <span class="badge bg-${
+                                              trailer.sensorData.brakePad
+                                                .status === "normal"
+                                                ? "success"
+                                                : trailer.sensorData.brakePad
+                                                    .status === "warning"
+                                                ? "warning"
+                                                : "danger"
+                                            }">
+                                                ${
+                                                  trailer.sensorData.brakePad
+                                                    .status === "normal"
+                                                    ? "Normal"
+                                                    : trailer.sensorData
+                                                        .brakePad.status ===
+                                                      "warning"
+                                                    ? "Advertencia"
+                                                    : "Crítico"
+                                                }
+                                            </span>
+                                        </span>
+                                    </div>
+                                    <div class="progress mt-2" style="height: 8px;">
+                                        <div class="progress-bar bg-${
+                                          trailer.sensorData.brakePad.status ===
+                                          "normal"
+                                            ? "success"
+                                            : trailer.sensorData.brakePad
+                                                .status === "warning"
+                                            ? "warning"
+                                            : "danger"
+                                        }" 
+                                            style="width: ${
+                                              trailer.sensorData.brakePad.value
+                                            }%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Historial de Mantenimiento</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="timeline">
+                                    <div class="timeline-item">
+                                        <div class="timeline-dot">
+                                            <i class="fas fa-wrench"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <h6>Cambio de aceite</h6>
+                                            <small class="text-muted">15/06/2023 - Preventivo</small>
+                                            <p class="mb-0">Cambio de aceite y filtros por Carlos Mendoza</p>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-item">
+                                        <div class="timeline-dot">
+                                            <i class="fas fa-tools"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <h6>Revisión de frenos</h6>
+                                            <small class="text-muted">10/05/2023 - Predictivo</small>
+                                            <p class="mb-0">Ajuste de sistema de frenos por Juan Pérez</p>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-item">
+                                        <div class="timeline-dot">
+                                            <i class="fas fa-tire"></i>
+                                        </div>
+                                        <div class="timeline-content">
+                                            <h6>Rotación de neumáticos</h6>
+                                            <small class="text-muted">28/03/2023 - Preventivo</small>
+                                            <p class="mb-0">Rotación y balanceo de neumáticos por Miguel Torres</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Predicciones de IA</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-robot me-2"></i> El sistema ha detectado un riesgo alto en el sistema de frenos. 
+                            Se recomienda reemplazar las balatas en los próximos 7 días.
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6>Probabilidad de Falla</h6>
+                                        <div class="d-flex justify-content-between">
+                                            <small>Bajo</small>
+                                            <small>Alto</small>
+                                        </div>
+                                        <div class="progress mt-1" style="height: 15px;">
+                                            <div class="progress-bar bg-danger" style="width: 87%"></div>
+                                        </div>
+                                        <div class="text-center mt-2">
+                                            <span class="badge bg-danger">87% de probabilidad de falla en frenos</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6>Vida Útil Estimada</h6>
+                                        <div class="d-flex justify-content-between">
+                                            <small>Corto</small>
+                                            <small>Largo</small>
+                                        </div>
+                                        <div class="progress mt-1" style="height: 15px;">
+                                            <div class="progress-bar bg-warning" style="width: 35%"></div>
+                                        </div>
+                                        <div class="text-center mt-2">
+                                            <span class="badge bg-warning">35% de vida útil restante</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+        document.getElementById("trailerAnalysisContent").innerHTML = content;
+      }
+
+      // Buscar tráiler
+      function searchTrailer() {
+        const searchTerm = document
+          .getElementById("searchTrailer")
+          .value.toLowerCase();
+        if (!searchTerm) return;
+
+        const trailer = trailers.find((t) => t.id.toLowerCase() === searchTerm);
+        if (trailer) {
+          showTrailerDetails(trailer.id);
+        } else {
+          alert("No se encontró ningún tráiler con ese ID");
+        }
+      }
+
+      // Filtrar por estado
+      function filterByStatus(status) {
+        const rows = document.querySelectorAll("#fleetTableBody tr");
+
+        rows.forEach((row) => {
+          const trailerId = row
+            .querySelector("td:first-child")
+            .textContent.replace("#", "");
+          const trailer = trailers.find((t) => t.id === trailerId);
+
+          if (
+            status === "all" ||
+            (status === "active" && trailer.status === "active") ||
+            (status === "maintenance" && trailer.status === "maintenance") ||
+            (status === "inactive" && trailer.status === "inactive")
+          ) {
+            row.style.display = "";
+          } else {
+            row.style.display = "none";
+          }
+        });
+      }
+
+      // Filtrar por ubicación
+      function filterByLocation(location) {
+        const rows = document.querySelectorAll("#fleetTableBody tr");
+
+        rows.forEach((row) => {
+          const locationCell = row.querySelector("td:nth-child(3)").textContent;
+
+          if (
+            location === "all" ||
+            (location === "MX" && locationCell.includes("MX")) ||
+            (location === "US" && locationCell.includes("TX")) ||
+            locationCell.includes("AZ") ||
+            locationCell.includes("CA")
+          ) {
+            row.style.display = "";
+          } else {
+            row.style.display = "none";
+          }
+        });
+      }
+
+      // Cambiar rango de tiempo
+      function changeTimeRange(days) {
+        // Aquí iría la lógica para actualizar los gráficos con el nuevo rango
+        alert(`Rango de tiempo cambiado a ${days} días`);
+      }
+
+      // Inicializar el dashboard cuando el documento esté cargado
+      document.addEventListener("DOMContentLoaded", initDashboard);
+    </script>
+  </body>
+</html>
