@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aetherix AI - Mantenimiento Predictivo</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --carbon: #121212;
+        --cloud-blue: #66ccff;
+        --neon-green: #32ff6a;
+        --mist-grey: #c7ccd1;
+        --pure-white: #ffffff;
+        --red-alert: #ff5252;
+        --gold: #ffd700;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      body {
+        background-color: var(--carbon);
+        color: var(--mist-grey);
+        overflow-x: hidden;
+        line-height: 1.6;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      /* Header */
+      header {
+        background: linear-gradient(135deg, #121212 0%, #1a1a2e 100%);
+        padding: 40px 0;
+        border-bottom: 1px solid rgba(199, 204, 209, 0.1);
+        position: relative;
+        overflow: hidden;
+      }
+
+      header::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(
+          circle,
+          rgba(102, 204, 255, 0.05) 0%,
+          rgba(18, 18, 18, 0) 70%
+        );
+        pointer-events: none;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 30px;
+      }
+
+      .logo-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(
+          135deg,
+          var(--cloud-blue),
+          var(--neon-green)
+        );
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+      }
+
+      .logo-text {
+        font-size: 32px;
+        font-weight: 700;
+        background: linear-gradient(
+          to right,
+          var(--cloud-blue),
+          var(--neon-green)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -0.5px;
+      }
+
+      .hero {
+        max-width: 800px;
+        margin: 0 auto;
+        text-align: center;
+        padding: 40px 0;
+      }
+
+      .hero h1 {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 20px;
+        color: var(--pure-white);
+        line-height: 1.2;
+      }
+
+      .hero p {
+        font-size: 1.25rem;
+        margin-bottom: 30px;
+        color: var(--mist-grey);
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-top: 40px;
+      }
+
+      .stat-card {
+        background: rgba(30, 30, 40, 0.6);
+        border-radius: 16px;
+        padding: 25px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(102, 204, 255, 0.1);
+        transition: transform 0.3s ease, border-color 0.3s ease;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(102, 204, 255, 0.3);
+      }
+
+      .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--neon-green);
+        margin-bottom: 10px;
+      }
+
+      .stat-label {
+        font-size: 1rem;
+        color: var(--mist-grey);
+      }
+
+      /* Secciones */
+      section {
+        padding: 80px 0;
+      }
+
+      .section-title {
+        text-align: center;
+        margin-bottom: 60px;
+      }
+
+      .section-title h2 {
+        font-size: 2.5rem;
+        color: var(--pure-white);
+        margin-bottom: 15px;
+        background: linear-gradient(
+          to right,
+          var(--cloud-blue),
+          var(--mist-grey)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .section-title p {
+        font-size: 1.2rem;
+        max-width: 700px;
+        margin: 0 auto;
+        color: var(--mist-grey);
+      }
+
+      /* Gráficos */
+      .chart-container {
+        background: rgba(25, 25, 35, 0.6);
+        border-radius: 16px;
+        padding: 30px;
+        margin-bottom: 40px;
+        border: 1px solid rgba(102, 204, 255, 0.1);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
+      }
+
+      .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .chart-title {
+        font-size: 1.5rem;
+        color: var(--pure-white);
+      }
+
+      .sensor-selector {
+        display: flex;
+        gap: 15px;
+      }
+
+      .sensor-btn {
+        background: rgba(102, 204, 255, 0.1);
+        color: var(--cloud-blue);
+        border: none;
+        padding: 8px 16px;
+        border-radius: 30px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+      }
+
+      .sensor-btn.active {
+        background: var(--cloud-blue);
+        color: var(--carbon);
+        font-weight: 600;
+      }
+
+      .chart-wrapper {
+        position: relative;
+        height: 400px;
+      }
+
+      canvas {
+        width: 100% !important;
+        height: 100% !important;
+      }
+
+      /* Tablas */
+      .tables-container {
+        display: grid;
+        grid-template-rows: 1fr 1fr;
+        gap: 30px;
+        margin-top: 40px;
+      }
+
+      .table-card {
+        background: rgba(25, 25, 35, 0.6);
+        border-radius: 16px;
+        padding: 30px;
+        border: 1px solid rgba(102, 204, 255, 0.1);
+        backdrop-filter: blur(10px);
+      }
+
+      .table-title {
+        font-size: 1.5rem;
+        color: var(--pure-white);
+        margin-bottom: 20px;
+        text-align: center;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th {
+        background: rgba(102, 204, 255, 0.1);
+        color: var(--cloud-blue);
+        padding: 15px;
+        text-align: left;
+        font-weight: 600;
+      }
+
+      td {
+        padding: 15px;
+        border-bottom: 1px solid rgba(199, 204, 209, 0.1);
+      }
+
+      tr:last-child td {
+        border-bottom: none;
+      }
+
+      .highlight {
+        color: var(--neon-green);
+        font-weight: 600;
+      }
+
+      /* Footer */
+      footer {
+        background: rgba(10, 10, 15, 0.8);
+        padding: 40px 0;
+        text-align: center;
+        border-top: 1px solid rgba(102, 204, 255, 0.1);
+      }
+
+      .footer-content {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      .footer-logo {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 20px;
+        background: linear-gradient(
+          to right,
+          var(--cloud-blue),
+          var(--neon-green)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .footer-text {
+        color: var(--mist-grey);
+        margin-bottom: 30px;
+      }
+
+      /* Animaciones y efectos */
+      @keyframes float {
+        0% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+        100% {
+          transform: translateY(0px);
+        }
+      }
+
+      .floating {
+        animation: float 6s ease-in-out infinite;
+      }
+
+      .pulse {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        background: var(--neon-green);
+        border-radius: 50%;
+        margin-right: 8px;
+        box-shadow: 0 0 0 0 rgba(50, 255, 106, 0.7);
+        animation: pulse 2s infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(50, 255, 106, 0.7);
+        }
+        70% {
+          box-shadow: 0 0 0 10px rgba(50, 255, 106, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(50, 255, 106, 0);
+        }
+      }
+
+      /* Responsive */
+      @media (max-width: 992px) {
+        .tables-container {
+          grid-template-columns: 1fr;
+        }
+
+        .hero h1 {
+          font-size: 2.8rem;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .stats-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .hero h1 {
+          font-size: 2.2rem;
+        }
+
+        section {
+          padding: 60px 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="container">
+        <div class="logo">
+          <div class="logo-icon floating">
+            <i class="fas fa-atom"></i>
+          </div>
+          <div class="logo-text">Aetherix AI</div>
+        </div>
+
+        <div class="hero">
+          <h1>Revolucionando el Mantenimiento Predictivo con IA</h1>
+          <p>
+            Descubra cómo nuestra solución de Inteligencia Artificial reduce
+            costos, aumenta la eficiencia y previene fallas antes de que ocurran
+          </p>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-value">42%</div>
+              <div class="stat-label">Reducción en costos de mantenimiento</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">78%</div>
+              <div class="stat-label">
+                Menos falsos positivos que métodos tradicionales
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">95%</div>
+              <div class="stat-label">Precisión en predicción de fallas</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section id="comparison">
+      <div class="container">
+        <div class="section-title">
+          <h2>Comparación de Métodos Predictivos</h2>
+          <p>
+            Análisis de desempeño entre nuestro modelo de IA y métodos
+            predictivos tradicionales
+          </p>
+        </div>
+
+        <div class="chart-container">
+          <div class="chart-header">
+            <div class="chart-title">Desempeño Predictivo Método IA</div>
+            <div class="sensor-selector">
+              <button class="sensor-btn active" data-sensor="Temperatura">
+                Temperatura
+              </button>
+              <button class="sensor-btn" data-sensor="Vibracion">
+                Vibración
+              </button>
+              <button class="sensor-btn" data-sensor="Presion">Presión</button>
+            </div>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="comparisonChart"></canvas>
+          </div>
+        </div>
+        <div class="chart-container">
+          <div class="chart-header">
+            <div class="chart-title">
+              Desempeño Predictivo Método Tradicional
+            </div>
+          </div>
+          <div class="chart-wrapper">
+            <canvas id="comparisonChart2"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="predictions" style="background: rgba(20, 20, 30, 0.6)">
+      <div class="container">
+        <div class="section-title">
+          <h2>Predicción de Fallas</h2>
+          <p>
+            Nuestro modelo de IA identifica amenazas críticas con mayor
+            precisión y menor tasa de falsas alarmas
+          </p>
+        </div>
+
+        <div class="tables-container">
+          <div class="chart-container">
+            <div class="chart-header">
+              <div class="chart-title">Modelo de IA vs Realidad</div>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="iaPredictionChart"></canvas>
+            </div>
+          </div>
+
+          <div class="chart-container">
+            <div class="chart-header">
+              <div class="chart-title">Método Tradicional vs Realidad</div>
+            </div>
+            <div class="chart-wrapper">
+              <canvas id="classicPredictionChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="metrics">
+      <div class="container">
+        <div class="section-title">
+          <h2>Métricas Clave de Desempeño</h2>
+          <p>
+            Resultados cuantificables que demuestran la superioridad de nuestra
+            solución
+          </p>
+        </div>
+
+        <div class="tables-container">
+          <div class="table-card">
+            <div class="table-title">Resumen Histórico (hasta hoy)</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Métrica</th>
+                  <th>Valor</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Mantenimientos Reales</td>
+                  <td>7</td>
+                </tr>
+                <tr>
+                  <td>Detectados por IA</td>
+                  <td>8</td>
+                </tr>
+                <tr>
+                  <td>Detectados por Clásica</td>
+                  <td>15</td>
+                </tr>
+                <tr>
+                  <td>Ahorro con IA</td>
+                  <td class="highlight">7 intervenciones</td>
+                </tr>
+                <tr>
+                  <td>Precisión IA</td>
+                  <td class="highlight">87.5%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="table-card">
+            <div class="table-title">Proyecciones Futuras (resto 2025)</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Métrica</th>
+                  <th>Valor</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Mantenimientos Reales</td>
+                  <td>3</td>
+                </tr>
+                <tr>
+                  <td>Proyectados por IA</td>
+                  <td>4</td>
+                </tr>
+                <tr>
+                  <td>Proyectados por Clásica</td>
+                  <td>8</td>
+                </tr>
+                <tr>
+                  <td>Diferencia de Proyecciones</td>
+                  <td class="highlight">4 intervenciones</td>
+                </tr>
+                <tr>
+                  <td>Precisión IA (futuro)</td>
+                  <td class="highlight">75%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section
+      id="benefits"
+      style="background: linear-gradient(135deg, #121212 0%, #0c1a2a 100%)"
+    >
+      <div class="container">
+        <div class="section-title">
+          <h2>Ventajas Clave de Nuestra Solución</h2>
+          <p>Por qué elegir el mantenimiento predictivo con IA de Aetherix</p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value"><i class="fas fa-bolt"></i></div>
+            <div class="stat-label">
+              Reducción de hasta 45% en tiempo de inactividad
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value"><i class="fas fa-chart-line"></i></div>
+            <div class="stat-label">Aumento de 30% en vida útil de equipos</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value"><i class="fas fa-robot"></i></div>
+            <div class="stat-label">
+              Modelos de IA que mejoran continuamente
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value"><i class="fas fa-sync-alt"></i></div>
+            <div class="stat-label">Integración con sistemas existentes</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-logo">Aetherix AI Solutions</div>
+          <div class="footer-text">
+            <p>
+              Transformando el mantenimiento industrial con inteligencia
+              artificial predictiva
+            </p>
+            <p style="margin-top: 20px; font-size: 0.9rem; opacity: 0.7">
+              © 2025 Aetherix AI. Todos los derechos reservados.
+            </p>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Configuración común para gráficos
+      const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          mode: "index",
+          intersect: false,
+        },
+        scales: {
+          x: {
+            display: false,
+            grid: {
+              color: "rgba(199, 204, 209, 0.1)",
+            },
+          },
+          y: {
+            grid: {
+              color: "rgba(199, 204, 209, 0.1)",
+            },
+            ticks: {
+              color: "rgba(199, 204, 209, 0.7)",
+            },
+            beginAtZero: false,
+          },
+        },
+        plugins: {
+          legend: {
+            labels: {
+              color: "#C7CCD1",
+              font: {
+                size: 13,
+              },
+            },
+          },
+          tooltip: {
+            backgroundColor: "rgba(25, 25, 35, 0.9)",
+            titleColor: "#66CCFF",
+            bodyColor: "#C7CCD1",
+            borderColor: "rgba(102, 204, 255, 0.3)",
+            borderWidth: 1,
+            padding: 12,
+            cornerRadius: 8,
+          },
+        },
+      };
+
+      // Variables globales
+      let comparisonChart,
+        comparisonChart2,
+        iaPredictionChart,
+        classicPredictionChart;
+      let currentSensor = "Temperatura";
+      let jsonData; // Esta variable almacenará los datos cargados
+
+      // Función para cargar los datos JSON
+      async function loadData() {
+        const response = await fetch("dashboard_data.json");
+        jsonData = await response.json();
+        initCharts();
+      }
+
+      // Función para convertir fechas a objetos Date
+      function parseDates(dates) {
+        return dates.map((date) => new Date(date));
+      }
+
+      // Inicializar gráficos
+      function initCharts() {
+        // Gráfico de comparación
+        const comparisonCtx = document
+          .getElementById("comparisonChart")
+          .getContext("2d");
+        const comparisonCtx2 = document
+          .getElementById("comparisonChart2")
+          .getContext("2d");
+        comparisonChart = new Chart(comparisonCtx, {
+          type: "line",
+          data: getComparisonData(currentSensor),
+          options: {
+            ...chartOptions,
+            plugins: {
+              ...chartOptions.plugins,
+              title: {
+                display: true,
+                text: "Comparación de Métodos Predictivos",
+                color: "#FFFFFF",
+                font: {
+                  size: 16,
+                },
+              },
+            },
+          },
+        });
+        comparisonChart2 = new Chart(comparisonCtx2, {
+          type: "line",
+          data: getComparisonData2(currentSensor),
+          options: {
+            ...chartOptions,
+            plugins: {
+              ...chartOptions.plugins,
+              title: {
+                display: true,
+                text: "Comparación de Métodos Predictivos",
+                color: "#FFFFFF",
+                font: {
+                  size: 16,
+                },
+              },
+            },
+          },
+        });
+
+        // Gráfico de predicción IA
+        const iaPredictionCtx = document
+          .getElementById("iaPredictionChart")
+          .getContext("2d");
+        iaPredictionChart = new Chart(iaPredictionCtx, {
+          type: "line",
+          data: getPredictionData(currentSensor, "ia"),
+          options: {
+            ...chartOptions,
+            plugins: {
+              ...chartOptions.plugins,
+              title: {
+                display: true,
+                text: "Predicciones de IA vs Realidad",
+                color: "#FFFFFF",
+                font: {
+                  size: 16,
+                },
+              },
+              annotation: {
+                annotations: {
+                  thresholdLine: {
+                    type: "line",
+                    yMin: jsonData.threshold,
+                    yMax: jsonData.threshold,
+                    borderColor: "#FF5252",
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    label: {
+                      display: true,
+                      content: "Umbral de mantenimiento",
+                      position: "end",
+                      backgroundColor: "rgba(255, 82, 82, 0.3)",
+                      color: "#FFFFFF",
+                      font: {
+                        size: 12,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        // Gráfico de predicción clásica
+        const classicPredictionCtx = document
+          .getElementById("classicPredictionChart")
+          .getContext("2d");
+        classicPredictionChart = new Chart(classicPredictionCtx, {
+          type: "line",
+          data: getPredictionData(currentSensor, "clasico"),
+          options: {
+            ...chartOptions,
+            plugins: {
+              ...chartOptions.plugins,
+              title: {
+                display: true,
+                text: "Método Tradicional vs Realidad",
+                color: "#FFFFFF",
+                font: {
+                  size: 16,
+                },
+              },
+              annotation: {
+                annotations: {
+                  thresholdLine: {
+                    type: "line",
+                    yMin: jsonData.threshold,
+                    yMax: jsonData.threshold,
+                    borderColor: "#FF5252",
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    label: {
+                      display: true,
+                      content: "Umbral de mantenimiento",
+                      position: "end",
+                      backgroundColor: "rgba(255, 82, 82, 0.3)",
+                      color: "#FFFFFF",
+                      font: {
+                        size: 12,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        });
+      }
+
+      function getComparisonData(sensor) {
+        const todayIndex = jsonData.dates.findIndex((date) => {
+          const d = new Date(date);
+          return d.toDateString() === new Date().toDateString();
+        });
+
+        return {
+          labels: parseDates(jsonData.dates),
+          datasets: [
+            {
+              label: "Datos Reales",
+              data: jsonData.real[sensor],
+              borderColor: "#FFFFFF",
+              backgroundColor: "rgba(255, 255, 255, 0.1)",
+              borderWidth: 2,
+              pointRadius: 0,
+              tension: 0.4,
+            },
+            {
+              label: "Predicción IA",
+              data: jsonData.ia[sensor],
+              borderColor: "#66CCFF",
+              backgroundColor: "rgba(102, 204, 255, 0.1)",
+              borderWidth: 2,
+              pointRadius: 0,
+              tension: 0.4,
+            },
+          ],
+        };
+      }
+
+      function getComparisonData2(sensor) {
+        const todayIndex = jsonData.dates.findIndex((date) => {
+          const d = new Date(date);
+          return d.toDateString() === new Date().toDateString();
+        });
+
+        return {
+          labels: parseDates(jsonData.dates),
+          datasets: [
+            {
+              label: "Datos Reales",
+              data: jsonData.real[sensor],
+              borderColor: "#FFFFFF",
+              backgroundColor: "rgba(255, 255, 255, 0.1)",
+              borderWidth: 2,
+              pointRadius: 0,
+              tension: 0.4,
+            },
+            {
+              label: "Método Tradicional",
+              data: jsonData.clasico[sensor],
+              borderColor: "#32FF6A",
+              backgroundColor: "rgba(50, 255, 106, 0.1)",
+              borderWidth: 2,
+              pointRadius: 0,
+              tension: 0.4,
+            },
+          ],
+        };
+      }
+
+      function getPredictionData(sensor, type) {
+        const todayIndex = jsonData.dates.findIndex((date) => {
+          const d = new Date(date);
+
+          return d.toDateString() === new Date().toDateString();
+        });
+
+        // Preparar datos de fallas
+        const realFailuresPast = jsonData.dates.map((date) => {
+          return jsonData.real_failures.past.includes(date) ? 140 : null;
+        });
+
+        const realFailuresFuture = jsonData.dates.map((date) => {
+          return jsonData.real_failures.future.includes(date) ? 140 : null;
+        });
+
+        const predictedFailures = jsonData.dates.map((date) => {
+          const failureDates =
+            type === "ia"
+              ? jsonData.ia_failures.future
+              : jsonData.classic_failures.future;
+
+          return failureDates.includes(date) ? 135 : null;
+        });
+
+        return {
+          labels: parseDates(jsonData.dates),
+          datasets: [
+            {
+              label: "Datos Reales",
+              data: jsonData.real[sensor],
+              borderColor: "#FFFFFF",
+              backgroundColor: "rgba(255, 255, 255, 0.1)",
+              borderWidth: 2,
+              pointRadius: 0,
+              tension: 0.4,
+            },
+            {
+              label: type === "ia" ? "Predicción IA" : "Método Tradicional",
+              data:
+                type === "ia" ? jsonData.ia[sensor] : jsonData.clasico[sensor],
+              borderColor: type === "ia" ? "#66CCFF" : "#32FF6A",
+              backgroundColor:
+                type === "ia"
+                  ? "rgba(102, 204, 255, 0.1)"
+                  : "rgba(50, 255, 106, 0.1)",
+              borderWidth: 2,
+              pointRadius: 0,
+              tension: 0.4,
+            },
+            {
+              label: "Fallas Reales (Pasado)",
+              data: realFailuresPast,
+              backgroundColor: "#FF5252",
+              borderColor: "#FF5252",
+              pointRadius: 6,
+              pointHoverRadius: 8,
+              showLine: false,
+            },
+            {
+              label: "Fallas Reales (Futuro)",
+              data: realFailuresFuture,
+              backgroundColor: "#FF8A80",
+              borderColor: "#FF8A80",
+              pointRadius: 6,
+              pointHoverRadius: 8,
+              showLine: false,
+            },
+            {
+              label: "Fallas Predichas",
+              data: predictedFailures,
+              backgroundColor: type === "ia" ? "#66CCFF" : "#32FF6A",
+              borderColor: type === "ia" ? "#66CCFF" : "#32FF6A",
+              pointRadius: 6,
+              pointHoverRadius: 8,
+              showLine: false,
+            },
+            {
+              label: "Hoy",
+              data: jsonData.dates.map((_, i) =>
+                i === todayIndex
+                  ? Math.max(...jsonData.real[sensor]) * 1.1
+                  : null
+              ),
+              borderColor: "#FFD700",
+              borderWidth: 2,
+              pointRadius: 0,
+              borderDash: [5, 5],
+            },
+          ],
+        };
+      }
+
+      // Cambiar sensor
+      document.querySelectorAll(".sensor-btn").forEach((btn) => {
+        btn.addEventListener("click", function () {
+          document
+            .querySelectorAll(".sensor-btn")
+            .forEach((b) => b.classList.remove("active"));
+          this.classList.add("active");
+          currentSensor = this.dataset.sensor;
+
+          if (comparisonChart) {
+            comparisonChart.data = getComparisonData(currentSensor);
+            comparisonChart.update();
+          }
+
+          if (comparisonChart2) {
+            comparisonChart2.data = getComparisonData2(currentSensor);
+            comparisonChart2.update();
+          }
+
+          if (iaPredictionChart) {
+            iaPredictionChart.data = getPredictionData(currentSensor, "ia");
+            iaPredictionChart.update();
+          }
+
+          if (classicPredictionChart) {
+            classicPredictionChart.data = getPredictionData(
+              currentSensor,
+              "clasico"
+            );
+            classicPredictionChart.update();
+          }
+        });
+      });
+
+      // Inicializar
+      window.addEventListener("load", loadData);
+    </script>
+  </body>
+</html>
