@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Registro de Establecimiento | BusinessConnect</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #4361ee;
+        --primary-dark: #3a56d4;
+        --secondary: #f8f9fa;
+        --success: #06d6a0;
+        --light: #f8f9fa;
+        --dark: #212529;
+        --gray: #6c757d;
+        --light-gray: #e9ecef;
+        --border-radius: 12px;
+        --box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        --transition: all 0.3s ease;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+        background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        color: var(--dark);
+        line-height: 1.6;
+      }
+
+      .app-container {
+        max-width: 1200px;
+        width: 100%;
+        margin: 2rem auto;
+        padding: 0 1.5rem;
+      }
+
+      .form-card {
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        overflow: hidden;
+        transition: var(--transition);
+      }
+
+      .form-header {
+        background: linear-gradient(120deg, var(--primary), #5e72e4);
+        color: white;
+        padding: 2.5rem;
+        text-align: center;
+      }
+
+      .form-title {
+        font-weight: 700;
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .form-subtitle {
+        font-weight: 400;
+        opacity: 0.9;
+        font-size: 1.1rem;
+      }
+
+      .progress-container {
+        padding: 1.5rem 2rem;
+        background: white;
+        border-bottom: 1px solid var(--light-gray);
+      }
+
+      .progress-bar-container {
+        height: 8px;
+        background: var(--light-gray);
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 0.5rem 0 1.5rem;
+      }
+
+      .progress-bar {
+        height: 100%;
+        background: var(--primary);
+        border-radius: 4px;
+        transition: width 0.5s ease;
+      }
+
+      .progress-steps {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .progress-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        z-index: 1;
+        flex: 1;
+      }
+
+      .step-number {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: white;
+        border: 2px solid var(--light-gray);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        transition: var(--transition);
+      }
+
+      .step-label {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--gray);
+        text-align: center;
+        transition: var(--transition);
+      }
+
+      .progress-step.active .step-number {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: white;
+      }
+
+      .progress-step.active .step-label {
+        color: var(--primary);
+        font-weight: 600;
+      }
+
+      .form-body {
+        padding: 2.5rem;
+      }
+
+      .form-phase {
+        display: none;
+        animation: fadeIn 0.4s ease;
+      }
+
+      .form-phase.active {
+        display: block;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .phase-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        color: var(--dark);
+        position: relative;
+        padding-bottom: 0.75rem;
+      }
+
+      .phase-title::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 60px;
+        height: 4px;
+        background: var(--primary);
+        border-radius: 2px;
+      }
+
+      .form-section {
+        margin-bottom: 2rem;
+      }
+
+      .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+      }
+
+      .section-title i {
+        margin-right: 0.75rem;
+        color: var(--primary);
+      }
+
+      .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.5rem;
+      }
+
+      .form-group {
+        margin-bottom: 1.25rem;
+      }
+
+      .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: var(--dark);
+      }
+
+      .form-label .required {
+        color: #e63946;
+      }
+
+      .form-control {
+        width: 100%;
+        padding: 0.85rem 1rem;
+        border: 1px solid #ced4da;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: var(--transition);
+      }
+
+      .form-control:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+        outline: none;
+      }
+
+      .form-control::placeholder {
+        color: #adb5bd;
+      }
+
+      .image-upload {
+        position: relative;
+        cursor: pointer;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px dashed #ced4da;
+        background: #f8f9fa;
+        transition: var(--transition);
+        text-align: center;
+        padding: 1.5rem;
+      }
+
+      .image-upload:hover {
+        border-color: var(--primary);
+        background: rgba(67, 97, 238, 0.05);
+      }
+
+      .image-upload input {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+      }
+
+      .image-upload .upload-icon {
+        font-size: 2.5rem;
+        color: var(--primary);
+        margin-bottom: 0.75rem;
+      }
+
+      .image-upload .upload-text {
+        font-weight: 500;
+        color: var(--dark);
+        margin-bottom: 0.25rem;
+      }
+
+      .image-upload .upload-hint {
+        font-size: 0.85rem;
+        color: var(--gray);
+      }
+
+      .image-preview {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .preview-container {
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .preview-image {
+        display: block;
+        object-fit: cover;
+      }
+
+      .logo-preview {
+        width: 120px;
+        height: 120px;
+      }
+
+      .banner-preview {
+        width: 100%;
+        height: 180px;
+      }
+
+      .toggle-container {
+        display: flex;
+        align-items: center;
+      }
+
+      .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 30px;
+        margin-right: 1rem;
+      }
+
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: #ced4da;
+        transition: var(--transition);
+        border-radius: 34px;
+      }
+
+      .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 22px;
+        width: 22px;
+        left: 4px;
+        bottom: 4px;
+        background: white;
+        transition: var(--transition);
+        border-radius: 50%;
+      }
+
+      input:checked + .toggle-slider {
+        background: var(--primary);
+      }
+
+      input:checked + .toggle-slider:before {
+        transform: translateX(30px);
+      }
+
+      .toggle-label {
+        font-weight: 500;
+        color: var(--dark);
+      }
+
+      .business-hours {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+      }
+
+      .day-card {
+        background: white;
+        border: 1px solid var(--light-gray);
+        border-radius: 8px;
+        padding: 1rem;
+        transition: var(--transition);
+      }
+
+      .day-card:hover {
+        border-color: var(--primary);
+      }
+
+      .day-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.75rem;
+      }
+
+      .day-checkbox {
+        margin-right: 0.75rem;
+      }
+
+      .day-name {
+        font-weight: 500;
+        color: var(--dark);
+      }
+
+      .time-selector {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.5rem;
+      }
+
+      .time-selector span {
+        margin: 0 0.5rem;
+        color: var(--gray);
+      }
+
+      .service-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+      }
+
+      .service-table th {
+        background: var(--light);
+        padding: 0.85rem 1rem;
+        text-align: left;
+        font-weight: 600;
+        color: var(--dark);
+        border-bottom: 1px solid var(--light-gray);
+      }
+
+      .service-table td {
+        padding: 1rem;
+        border-bottom: 1px solid var(--light-gray);
+        vertical-align: middle;
+      }
+
+      .service-table tr:last-child td {
+        border-bottom: none;
+      }
+
+      .service-table tr:hover {
+        background: rgba(67, 97, 238, 0.03);
+      }
+
+      .action-btn {
+        background: none;
+        border: none;
+        color: var(--gray);
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 6px;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .action-btn:hover {
+        background: var(--light);
+        color: var(--primary);
+      }
+
+      .employee-card {
+        background: white;
+        border: 1px solid var(--light-gray);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: var(--transition);
+      }
+
+      .employee-card:hover {
+        border-color: var(--primary);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      }
+
+      .employee-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      }
+
+      .employee-avatar {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 1rem;
+        border: 2px solid var(--light);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .employee-name {
+        font-weight: 600;
+        font-size: 1.25rem;
+        color: var(--dark);
+      }
+
+      .employee-actions {
+        margin-left: auto;
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .btn-primary {
+        background: var(--primary);
+        border: none;
+        color: white;
+        padding: 0.85rem 1.75rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+      }
+
+      .btn-outline {
+        background: white;
+        border: 1px solid var(--light-gray);
+        color: var(--dark);
+        padding: 0.85rem 1.75rem;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: var(--transition);
+      }
+
+      .btn-outline:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+      }
+
+      .form-footer {
+        display: flex;
+        justify-content: space-between;
+        padding: 1.5rem 2.5rem;
+        background: var(--light);
+        border-top: 1px solid var(--light-gray);
+      }
+
+      .btn-icon {
+        margin-right: 0.5rem;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      @media (max-width: 768px) {
+        .form-header {
+          padding: 1.5rem;
+        }
+
+        .form-body,
+        .form-footer {
+          padding: 1.5rem;
+        }
+
+        .progress-container {
+          padding: 1.25rem;
+        }
+
+        .form-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .form-footer {
+          flex-direction: column;
+          gap: 0.75rem;
+        }
+
+        .btn-primary,
+        .btn-outline {
+          width: 100%;
+        }
+      }
+
+      .success-screen {
+        text-align: center;
+        padding: 3rem;
+      }
+
+      .success-icon {
+        font-size: 4rem;
+        color: var(--success);
+        margin-bottom: 1.5rem;
+      }
+
+      .success-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: var(--dark);
+      }
+
+      .success-message {
+        font-size: 1.1rem;
+        color: var(--gray);
+        max-width: 600px;
+        margin: 0 auto 2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-container">
+      <div class="form-card">
+        <div class="form-header">
+          <h1 class="form-title">Registra tu Establecimiento</h1>
+          <p class="form-subtitle">
+            Completa los siguientes pasos para unirte a nuestra plataforma
+          </p>
+        </div>
+
+        <div class="progress-container">
+          <div class="progress-bar-container">
+            <div
+              class="progress-bar"
+              id="progressBar"
+              style="width: 33.33%"
+            ></div>
+          </div>
+          <div class="progress-steps">
+            <div class="progress-step active">
+              <div class="step-number">1</div>
+              <div class="step-label">Información General</div>
+            </div>
+            <div class="progress-step">
+              <div class="step-number">2</div>
+              <div class="step-label">Servicios</div>
+            </div>
+            <div class="progress-step">
+              <div class="step-number">3</div>
+              <div class="step-label">Empleados</div>
+            </div>
+          </div>
+        </div>
+
+        <form id="businessForm">
+          <div class="form-body">
+            <!-- Fase 1: Información General -->
+            <div class="form-phase active" id="phase1">
+              <h2 class="phase-title">Información del Establecimiento</h2>
+
+              <div class="form-section">
+                <h3 class="section-title">
+                  <i class="bi bi-image"></i>Imágenes del Negocio
+                </h3>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label"
+                      >Logo del Negocio <span class="required">*</span></label
+                    >
+                    <div class="image-upload">
+                      <i class="bi bi-cloud-arrow-up upload-icon"></i>
+                      <div class="upload-text">Sube tu logo</div>
+                      <div class="upload-hint">
+                        Formatos: JPG, PNG (Máx. 5MB)
+                      </div>
+                      <input type="file" id="logoUpload" accept="image/*" />
+                    </div>
+                    <div class="image-preview" id="logoPreview"></div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label"
+                      >Banner del Negocio <span class="required">*</span></label
+                    >
+                    <div class="image-upload">
+                      <i class="bi bi-images upload-icon"></i>
+                      <div class="upload-text">Sube tu banner</div>
+                      <div class="upload-hint">Recomendado: 1200x400px</div>
+                      <input type="file" id="bannerUpload" accept="image/*" />
+                    </div>
+                    <div class="image-preview" id="bannerPreview"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-section">
+                <h3 class="section-title">
+                  <i class="bi bi-building"></i>Datos Básicos
+                </h3>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label"
+                      >Nombre del Negocio <span class="required">*</span></label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Ej: Barbería Elegante"
+                      required
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label"
+                      >Giro <span class="required">*</span></label
+                    >
+                    <select class="form-control" required>
+                      <option value="" disabled selected>
+                        Selecciona un giro
+                      </option>
+                      <option value="barberia">Barberías</option>
+                      <option value="unas">Uñas</option>
+                      <option value="spa">Spa & Bienestar</option>
+                      <option value="peluqueria">Peluquería</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label"
+                      >Correo Electrónico <span class="required">*</span></label
+                    >
+                    <input
+                      type="email"
+                      class="form-control"
+                      placeholder="contacto@negocio.com"
+                      required
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label"
+                      >Teléfono <span class="required">*</span></label
+                    >
+                    <input
+                      type="tel"
+                      class="form-control"
+                      placeholder="(123) 456-7890"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label"
+                    >Ubicación <span class="required">*</span></label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder="Dirección completa"
+                    required
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Servicio a domicilio</label>
+                  <div class="toggle-container">
+                    <label class="toggle-switch">
+                      <input type="checkbox" />
+                      <span class="toggle-slider"></span>
+                    </label>
+                    <span class="toggle-label"
+                      >Ofrecemos servicio a domicilio</span
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-section">
+                <h3 class="section-title">
+                  <i class="bi bi-clock"></i>Horario de Atención
+                </h3>
+                <div class="business-hours">
+                  <!-- Horario generado dinámicamente con JavaScript -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Fase 2: Servicios -->
+            <div class="form-phase" id="phase2">
+              <h2 class="phase-title">Servicios Ofrecidos</h2>
+
+              <div class="form-section">
+                <h3 class="section-title">
+                  <i class="bi bi-plus-circle"></i>Agregar Nuevo Servicio
+                </h3>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label"
+                      >Nombre del Servicio
+                      <span class="required">*</span></label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Ej: Corte de Cabello"
+                      id="serviceName"
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label"
+                      >Duración <span class="required">*</span></label
+                    >
+                    <select class="form-control" id="serviceDuration">
+                      <option value="" disabled selected>
+                        Selecciona duración
+                      </option>
+                      <option value="30">30 minutos</option>
+                      <option value="60">60 minutos</option>
+                      <option value="90">90 minutos</option>
+                      <option value="120">120 minutos</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label"
+                      >Precio ($) <span class="required">*</span></label
+                    >
+                    <input
+                      type="number"
+                      class="form-control"
+                      placeholder="0.00"
+                      id="servicePrice"
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">¿Es un paquete?</label>
+                    <div class="toggle-container">
+                      <label class="toggle-switch">
+                        <input type="checkbox" id="packageToggle" />
+                        <span class="toggle-slider"></span>
+                      </label>
+                      <span class="toggle-label">Servicio en paquete</span>
+                    </div>
+                    <div id="packageField" class="hidden mt-2">
+                      <label class="form-label">Cantidad de Servicios</label>
+                      <input
+                        type="number"
+                        class="form-control"
+                        placeholder="Ej: 5"
+                        min="1"
+                        id="packageQuantity"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <button type="button" class="btn-primary" id="addServiceBtn">
+                  <i class="bi bi-plus-lg btn-icon"></i>Agregar Servicio
+                </button>
+              </div>
+
+              <div class="form-section">
+                <h3 class="section-title">
+                  <i class="bi bi-list-task"></i>Servicios Registrados
+                </h3>
+                <div class="table-responsive">
+                  <table class="service-table">
+                    <thead>
+                      <tr>
+                        <th>Servicio</th>
+                        <th>Duración</th>
+                        <th>Precio</th>
+                        <th>Cantidad</th>
+                        <th>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody id="servicesTable">
+                      <!-- Servicios agregados dinámicamente -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Fase 3: Empleados -->
+            <div class="form-phase" id="phase3">
+              <h2 class="phase-title">Equipo de Trabajo</h2>
+
+              <div class="form-section">
+                <h3 class="section-title">
+                  <i class="bi bi-person-plus"></i>Agregar Nuevo Empleado
+                </h3>
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label class="form-label">Foto del Empleado</label>
+                    <div class="image-upload">
+                      <i class="bi bi-person-bounding-box upload-icon"></i>
+                      <div class="upload-text">Sube una foto</div>
+                      <div class="upload-hint">
+                        Formatos: JPG, PNG (Máx. 5MB)
+                      </div>
+                      <input type="file" id="employeePhoto" accept="image/*" />
+                    </div>
+                    <div class="image-preview" id="employeePreview"></div>
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label"
+                      >Nombre Completo <span class="required">*</span></label
+                    >
+                    <input
+                      type="text"
+                      class="form-control"
+                      placeholder="Nombre del empleado"
+                      id="employeeName"
+                    />
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label"
+                    >Tipo de Horario <span class="required">*</span></label
+                  >
+                  <div class="d-flex gap-3">
+                    <div class="form-check">
+                      <input
+                        class="form-check-input"
+                        type="radio"
+                        name="scheduleType"
+                        id="continuousSchedule"
+                        value="continuous"
+                        checked
+                      />
+                      <label class="form-check-label" for="continuousSchedule">
+                        Horario Continuo
+                      </label>
+                    </div>
+                    <div class="form-check">
+                      <input
+                        class="form-check-input"
+                        type="radio"
+                        name="scheduleType"
+                        id="specificSchedule"
+                        value="specific"
+                      />
+                      <label class="form-check-label" for="specificSchedule">
+                        Horario Específico
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div id="continuousScheduleSection">
+                  <h4 class="mt-4 mb-3">Horario de Trabajo</h4>
+                  <div class="business-hours">
+                    <!-- Horario generado dinámicamente con JavaScript -->
+                  </div>
+                </div>
+
+                <div id="specificScheduleSection" class="hidden">
+                  <h4 class="mt-4 mb-3">Horario Específico por Día</h4>
+                  <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> Haz clic en el botón "+"
+                    de cada día para agregar horarios.
+                  </div>
+                  <div class="table-responsive">
+                    <table class="table table-bordered">
+                      <thead>
+                        <tr>
+                          <th>Lunes</th>
+                          <th>Martes</th>
+                          <th>Miércoles</th>
+                          <th>Jueves</th>
+                          <th>Viernes</th>
+                          <th>Sábado</th>
+                          <th>Domingo</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <!-- Horarios generados dinámicamente con JavaScript -->
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div class="form-section mt-4">
+                  <h3 class="section-title">
+                    <i class="bi bi-alarm"></i>Horas de Descanso
+                  </h3>
+                  <div class="form-grid">
+                    <div class="form-group">
+                      <label class="form-label">Hora de Inicio</label>
+                      <select class="form-control" id="breakStart">
+                        <option value="" disabled selected>
+                          Selecciona hora
+                        </option>
+                        <!-- Opciones generadas con JS -->
+                      </select>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label">Hora de Fin</label>
+                      <select class="form-control" id="breakEnd">
+                        <option value="" disabled selected>
+                          Selecciona hora
+                        </option>
+                        <!-- Opciones generadas con JS -->
+                      </select>
+                    </div>
+                  </div>
+                  <button type="button" class="btn-outline mt-2">
+                    <i class="bi bi-plus btn-icon"></i>Agregar Descanso
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  class="btn-primary mt-4"
+                  id="addEmployeeBtn"
+                >
+                  <i class="bi bi-person-plus btn-icon"></i>Agregar Empleado
+                </button>
+              </div>
+
+              <div class="form-section">
+                <h3 class="section-title">
+                  <i class="bi bi-people"></i>Empleados Registrados
+                </h3>
+                <div id="employeesList">
+                  <!-- Empleados agregados dinámicamente -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Pantalla de éxito (oculta inicialmente) -->
+            <div class="form-phase" id="successScreen">
+              <div class="success-screen">
+                <i class="bi bi-check-circle success-icon"></i>
+                <h2 class="success-title">¡Registro Completado!</h2>
+                <p class="success-message">
+                  Tu establecimiento ha sido registrado exitosamente. Estamos
+                  revisando tu información y te notificaremos cuando esté activa
+                  en nuestra plataforma.
+                </p>
+                <button type="button" class="btn-primary" id="dashboardBtn">
+                  Ir al Panel de Control
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-footer">
+            <button type="button" class="btn-outline" id="prevBtn">
+              <i class="bi bi-arrow-left btn-icon"></i>Anterior
+            </button>
+            <button type="button" class="btn-primary" id="nextBtn">
+              Siguiente<i class="bi bi-arrow-right btn-icon"></i>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      // Variables globales
+      let currentPhase = 1;
+      const totalPhases = 3;
+
+      // Elementos DOM
+      const progressBar = document.getElementById("progressBar");
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
+      const phaseElements = document.querySelectorAll(".form-phase");
+      const progressSteps = document.querySelectorAll(".progress-step");
+
+      // Inicialización
+      document.addEventListener("DOMContentLoaded", function () {
+        // Configurar botones
+        prevBtn.addEventListener("click", goToPrevPhase);
+        nextBtn.addEventListener("click", goToNextPhase);
+
+        // Generar horarios para Fase 1 y Fase 3
+        generateBusinessHours(".business-hours");
+
+        // Generar opciones de tiempo para descansos
+        generateTimeOptions();
+
+        // Configurar eventos de subida de imágenes
+        setupImageUploads();
+
+        // Configurar eventos para Fase 2 (Servicios)
+        setupServicesSection();
+
+        // Configurar eventos para Fase 3 (Empleados)
+        setupEmployeesSection();
+
+        // Configurar toggle de horario específico
+        document
+          .querySelectorAll('input[name="scheduleType"]')
+          .forEach((radio) => {
+            radio.addEventListener("change", toggleScheduleType);
+          });
+      });
+
+      // Navegación entre fases
+      function goToNextPhase() {
+        if (validateCurrentPhase()) {
+          if (currentPhase < totalPhases) {
+            // Actualizar UI para la siguiente fase
+            document
+              .getElementById(`phase${currentPhase}`)
+              .classList.remove("active");
+            currentPhase++;
+            document
+              .getElementById(`phase${currentPhase}`)
+              .classList.add("active");
+
+            // Actualizar barra de progreso
+            updateProgressBar();
+
+            // Actualizar botones
+            if (currentPhase === totalPhases) {
+              nextBtn.textContent = "Finalizar Registro";
+            }
+          } else {
+            // Finalizar registro
+            completeRegistration();
+          }
+        }
+      }
+
+      function goToPrevPhase() {
+        if (currentPhase > 1) {
+          // Actualizar UI para la fase anterior
+          document
+            .getElementById(`phase${currentPhase}`)
+            .classList.remove("active");
+          currentPhase--;
+          document
+            .getElementById(`phase${currentPhase}`)
+            .classList.add("active");
+
+          // Actualizar barra de progreso
+          updateProgressBar();
+
+          // Actualizar botones
+          nextBtn.textContent =
+            currentPhase === totalPhases ? "Finalizar Registro" : "Siguiente";
+        }
+      }
+
+      function updateProgressBar() {
+        // Calcular progreso
+        const progressPercentage = (currentPhase / totalPhases) * 100;
+        progressBar.style.width = `${progressPercentage}%`;
+
+        // Actualizar indicadores de pasos
+        progressSteps.forEach((step, index) => {
+          if (index < currentPhase) {
+            step.classList.add("active");
+          } else {
+            step.classList.remove("active");
+          }
+        });
+      }
+
+      function validateCurrentPhase() {
+        // Validación simplificada para la demostración
+        // En una implementación real, esto sería más completo
+        let isValid = true;
+
+        // Validar campos requeridos en la fase actual
+        const requiredFields = document.querySelectorAll(
+          `#phase${currentPhase} [required]`
+        );
+        requiredFields.forEach((fiel) => {
+          if (!fiel.value.trim()) {
+            isValid = false;
+            // Resaltar campo vacío
+            fiel.style.borderColor = "#e63946";
+            setTimeout(() => {
+              fiel.style.borderColor = "";
+            }, 2000);
+          }
+        });
+
+        if (!isValid) {
+          alert(
+            "Por favor completa todos los campos requeridos antes de continuar."
+          );
+        }
+
+        return isValid;
+      }
+
+      function completeRegistration() {
+        // Ocultar todas las fases y mostrar pantalla de éxito
+        phaseElements.forEach((phase) => {
+          phase.classList.remove("active");
+        });
+        document.getElementById("successScreen").classList.add("active");
+
+        // Ocultar botones de navegación
+        document.querySelector(".form-footer").classList.add("hidden");
+      }
+
+      function generateBusinessHours(containerSelector) {
+        const days = [
+          { name: "Lunes", abbr: "Lun" },
+          { name: "Martes", abbr: "Mar" },
+          { name: "Miércoles", abbr: "Mié" },
+          { name: "Jueves", abbr: "Jue" },
+          { name: "Viernes", abbr: "Vie" },
+          { name: "Sábado", abbr: "Sáb" },
+          { name: "Domingo", abbr: "Dom" },
+        ];
+
+        const containers = document.querySelectorAll(containerSelector);
+
+        containers.forEach((container) => {
+          days.forEach((day) => {
+            const dayCard = document.createElement("div");
+            dayCard.className = "day-card";
+            dayCard.innerHTML = `
+                        <div class="day-header">
+                            <input type="checkbox" class="day-checkbox">
+                            <div class="day-name">${day.name}</div>
+                        </div>
+                        <div class="time-selector">
+                            <select class="form-control">
+                                <option value="" disabled selected>Inicio</option>
+                                ${generateTimeOptionsHTML()}
+                            </select>
+                            <span>a</span>
+                            <select class="form-control">
+                                <option value="" disabled selected>Fin</option>
+                                ${generateTimeOptionsHTML()}
+                            </select>
+                        </div>
+                    `;
+            container.appendChild(dayCard);
+          });
+        });
+      }
+
+      function generateTimeOptions() {
+        const startSelect = document.getElementById("breakStart");
+        const endSelect = document.getElementById("breakEnd");
+
+        if (startSelect && endSelect) {
+          startSelect.innerHTML =
+            '<option value="" disabled selected>Selecciona hora</option>' +
+            generateTimeOptionsHTML();
+          endSelect.innerHTML =
+            '<option value="" disabled selected>Selecciona hora</option>' +
+            generateTimeOptionsHTML();
+        }
+      }
+
+      function generateTimeOptionsHTML() {
+        let options = "";
+        for (let hour = 0; hour < 24; hour++) {
+          for (let minute = 0; minute < 60; minute += 30) {
+            const hourStr = hour.toString().padStart(2, "0");
+            const minuteStr = minute.toString().padStart(2, "0");
+            const time = `${hourStr}:${minuteStr}`;
+            options += `<option value="${time}">${time}</option>`;
+          }
+        }
+        return options;
+      }
+
+      function setupImageUploads() {
+        // Logo del negocio
+        document
+          .getElementById("logoUpload")
+          .addEventListener("change", function (e) {
+            handleImageUpload(e, "logoPreview", true);
+          });
+
+        // Banner del negocio
+        document
+          .getElementById("bannerUpload")
+          .addEventListener("change", function (e) {
+            handleImageUpload(e, "bannerPreview", false);
+          });
+
+        // Foto del empleado
+        document
+          .getElementById("employeePhoto")
+          .addEventListener("change", function (e) {
+            handleImageUpload(e, "employeePreview", true);
+          });
+      }
+
+      function handleImageUpload(event, previewId, isSquare) {
+        const file = event.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function (e) {
+            const previewContainer = document.getElementById(previewId);
+            previewContainer.innerHTML = "";
+
+            const img = document.createElement("img");
+            img.src = e.target.result;
+            img.className = `preview-image ${
+              isSquare ? "logo-preview" : "banner-preview"
+            }`;
+            img.alt = "Previsualización";
+
+            previewContainer.appendChild(img);
+          };
+          reader.readAsDataURL(file);
+        }
+      }
+
+      function setupServicesSection() {
+        const addServiceBtn = document.getElementById("addServiceBtn");
+        const packageToggle = document.getElementById("packageToggle");
+        const packageField = document.getElementById("packageField");
+        const servicesTable = document.getElementById("servicesTable");
+
+        // Toggle para paquete de servicios
+        packageToggle.addEventListener("change", function () {
+          if (this.checked) {
+            packageField.classList.remove("hidden");
+          } else {
+            packageField.classList.add("hidden");
+          }
+        });
+
+        // Agregar servicio
+        addServiceBtn.addEventListener("click", function () {
+          const name = document.getElementById("serviceName").value;
+          const duration = document.getElementById("serviceDuration").value;
+          const price = document.getElementById("servicePrice").value;
+          const isPackage = packageToggle.checked;
+          const quantity = isPackage
+            ? document.getElementById("packageQuantity").value
+            : "";
+
+          if (name && duration && price) {
+            // Agregar a la tabla
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                        <td>${name}</td>
+                        <td>${duration} minutos</td>
+                        <td>$${parseFloat(price).toFixed(2)}</td>
+                        <td>${isPackage ? quantity : "-"}</td>
+                        <td>
+                            <button class="action-btn" title="Editar">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="action-btn" title="Eliminar">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    `;
+            servicesTable.appendChild(row);
+
+            // Resetear formulario
+            document.getElementById("serviceName").value = "";
+            document.getElementById("serviceDuration").selectedIndex = 0;
+            document.getElementById("servicePrice").value = "";
+            packageToggle.checked = false;
+            packageField.classList.add("hidden");
+            document.getElementById("packageQuantity").value = "";
+          } else {
+            alert("Por favor completa los campos requeridos.");
+          }
+        });
+      }
+
+      function setupEmployeesSection() {
+        const addEmployeeBtn = document.getElementById("addEmployeeBtn");
+        const employeesList = document.getElementById("employeesList");
+
+        // Agregar empleado
+        addEmployeeBtn.addEventListener("click", function () {
+          const name = document.getElementById("employeeName").value;
+
+          if (name) {
+            // Crear tarjeta de empleado
+            const employeeCard = document.createElement("div");
+            employeeCard.className = "employee-card";
+            employeeCard.innerHTML = `
+                        <div class="employee-header">
+                            <img src="https://via.placeholder.com/64" alt="${name}" class="employee-avatar">
+                            <div class="employee-name">${name}</div>
+                            <div class="employee-actions">
+                                <button class="action-btn" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="action-btn" title="Eliminar">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="employee-schedule">
+                            <p><strong>Horario:</strong> Continuo (9:00 - 18:00)</p>
+                            <p><strong>Descanso:</strong> 13:00 - 14:00</p>
+                        </div>
+                    `;
+            employeesList.appendChild(employeeCard);
+
+            // Resetear formulario
+            document.getElementById("employeeName").value = "";
+            document.getElementById("employeePreview").innerHTML = "";
+          } else {
+            alert("Por favor ingresa el nombre del empleado.");
+          }
+        });
+      }
+
+      function toggleScheduleType() {
+        const continuousSection = document.getElementById(
+          "continuousScheduleSection"
+        );
+        const specificSection = document.getElementById(
+          "specificScheduleSection"
+        );
+
+        if (document.getElementById("continuousSchedule").checked) {
+          continuousSection.classList.remove("hidden");
+          specificSection.classList.add("hidden");
+        } else {
+          continuousSection.classList.add("hidden");
+          specificSection.classList.remove("hidden");
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mapa de Calor de México - Muertes por Estado</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    />
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f5f7fa;
+        color: #333;
+      }
+
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      header {
+        background: linear-gradient(
+          135deg,
+          #1e5799 0%,
+          #207cca 51%,
+          #2989d8 100%
+        );
+        color: white;
+        padding: 20px;
+        border-radius: 8px 8px 0 0;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 2.2rem;
+        text-align: center;
+      }
+
+      .subtitle {
+        text-align: center;
+        margin: 10px 0 20px;
+        font-weight: 300;
+      }
+
+      .filters {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .filter-group {
+        display: flex;
+        flex-direction: column;
+        min-width: 250px;
+      }
+
+      .filter-group label {
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #2c3e50;
+      }
+
+      select {
+        padding: 12px 15px;
+        border-radius: 6px;
+        border: 1px solid #ddd;
+        background-color: #f8f9fa;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      select:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+      }
+
+      .map-container {
+        position: relative;
+        height: 600px;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        background: white;
+      }
+
+      #map {
+        height: 100%;
+        width: 100%;
+        z-index: 1;
+      }
+
+      .legend {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 12px;
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        font-size: 14px;
+        min-width: 150px;
+      }
+
+      .legend-title {
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #2c3e50;
+        text-align: center;
+      }
+
+      .legend-scale {
+        display: flex;
+        align-items: center;
+        height: 20px;
+        background: linear-gradient(
+          to right,
+          #4575b4,
+          #91bfdb,
+          #e0f3f8,
+          #fee090,
+          #fc8d59,
+          #d73027
+        );
+        margin-bottom: 8px;
+        border-radius: 3px;
+      }
+
+      .legend-labels {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .info {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(255, 255, 255, 0.9);
+        padding: 12px;
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        font-size: 14px;
+        max-width: 250px;
+      }
+
+      .info-title {
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: #2c3e50;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 5px;
+      }
+
+      .info-content {
+        line-height: 1.5;
+      }
+
+      footer {
+        text-align: center;
+        margin-top: 20px;
+        color: #7f8c8d;
+        font-size: 0.9rem;
+      }
+
+      @media (max-width: 768px) {
+        .filters {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .map-container {
+          height: 450px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Mapa de Calor de México</h1>
+        <p class="subtitle">Muertes por estado según año y causa</p>
+      </header>
+
+      <div class="filters">
+        <div class="filter-group">
+          <label for="year-select">Año:</label>
+          <select id="year-select">
+            <option value="2024">2024</option>
+            <option value="2025">2025</option>
+            <option value="2026">2026</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="cause-select">Causa de muerte:</label>
+          <select id="cause-select">
+            <option value="Cardiologia">Cardiología</option>
+            <option value="Traumatologia">Traumatología</option>
+            <option value="Neurologia">Neurología</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="map-container">
+        <div id="map"></div>
+        <div class="legend">
+          <div class="legend-title">Intensidad de Muertes</div>
+          <div class="legend-scale"></div>
+          <div class="legend-labels">
+            <span>Bajo</span>
+            <span>Alto</span>
+          </div>
+        </div>
+        <div class="info">
+          <div class="info-title">Información del Estado</div>
+          <div class="info-content">Selecciona un estado para ver detalles</div>
+        </div>
+      </div>
+
+      <footer>
+        <p>
+          Datos simulados para propósitos de demostración | Mapa de calor
+          interactivo
+        </p>
+      </footer>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script>
+      // Datos simulados de muertes por estado, año y causa
+      const deathData = {
+        2024: {
+          Cardiologia: {
+            AGS: 1245,
+            BC: 2876,
+            BCS: 876,
+            CAMP: 1567,
+            COAH: 1987,
+            COL: 765,
+            CHIS: 2345,
+            CHIH: 2987,
+            CDMX: 4987,
+            DGO: 1321,
+            GTO: 2876,
+            GRO: 1987,
+            HGO: 1567,
+            JAL: 3678,
+            MEX: 4876,
+            MICH: 2987,
+            MOR: 987,
+            NAY: 765,
+            NL: 2987,
+            OAX: 1987,
+            PUE: 2876,
+            QRO: 1234,
+            QROO: 876,
+            SLP: 1543,
+            SIN: 1987,
+            SON: 2876,
+            TAB: 1321,
+            TAMPS: 1876,
+            TLAX: 765,
+            VER: 3987,
+            YUC: 1543,
+            ZAC: 987,
+          },
+          Traumatologia: {
+            AGS: 876,
+            BC: 1987,
+            BCS: 543,
+            CAMP: 987,
+            COAH: 1543,
+            COL: 432,
+            CHIS: 1876,
+            CHIH: 2345,
+            CDMX: 3987,
+            DGO: 987,
+            GTO: 1765,
+            GRO: 2345,
+            HGO: 987,
+            JAL: 2876,
+            MEX: 3678,
+            MICH: 1987,
+            MOR: 654,
+            NAY: 543,
+            NL: 2345,
+            OAX: 1543,
+            PUE: 1987,
+            QRO: 876,
+            QROO: 654,
+            SLP: 1098,
+            SIN: 1543,
+            SON: 1987,
+            TAB: 1098,
+            TAMPS: 1543,
+            TLAX: 432,
+            VER: 2876,
+            YUC: 1098,
+            ZAC: 654,
+          },
+          Neurologia: {
+            AGS: 1098,
+            BC: 2345,
+            BCS: 654,
+            CAMP: 1321,
+            COAH: 1765,
+            COL: 543,
+            CHIS: 1987,
+            CHIH: 2543,
+            CDMX: 4321,
+            DGO: 1098,
+            GTO: 2345,
+            GRO: 1987,
+            HGO: 1321,
+            JAL: 3098,
+            MEX: 3987,
+            MICH: 2345,
+            MOR: 765,
+            NAY: 654,
+            NL: 2543,
+            OAX: 1765,
+            PUE: 2345,
+            QRO: 1098,
+            QROO: 765,
+            SLP: 1321,
+            SIN: 1765,
+            SON: 2345,
+            TAB: 1321,
+            TAMPS: 1765,
+            TLAX: 543,
+            VER: 3098,
+            YUC: 1321,
+            ZAC: 765,
+          },
+        },
+        2025: {
+          Cardiologia: {
+            AGS: 1321,
+            BC: 3098,
+            BCS: 987,
+            CAMP: 1765,
+            COAH: 2187,
+            COL: 876,
+            CHIS: 2543,
+            CHIH: 3210,
+            CDMX: 5321,
+            DGO: 1454,
+            GTO: 3098,
+            GRO: 2187,
+            HGO: 1765,
+            JAL: 3987,
+            MEX: 5210,
+            MICH: 3210,
+            MOR: 1098,
+            NAY: 876,
+            NL: 3210,
+            OAX: 2187,
+            PUE: 3098,
+            QRO: 1321,
+            QROO: 987,
+            SLP: 1765,
+            SIN: 2187,
+            SON: 3098,
+            TAB: 1454,
+            TAMPS: 1987,
+            TLAX: 876,
+            VER: 4321,
+            YUC: 1765,
+            ZAC: 1098,
+          },
+          Traumatologia: {
+            AGS: 987,
+            BC: 2187,
+            BCS: 654,
+            CAMP: 1098,
+            COAH: 1765,
+            COL: 543,
+            CHIS: 1987,
+            CHIH: 2543,
+            CDMX: 4321,
+            DGO: 1098,
+            GTO: 1987,
+            GRO: 2543,
+            HGO: 1098,
+            JAL: 3098,
+            MEX: 3987,
+            MICH: 2187,
+            MOR: 765,
+            NAY: 654,
+            NL: 2543,
+            OAX: 1765,
+            PUE: 2187,
+            QRO: 987,
+            QROO: 765,
+            SLP: 1321,
+            SIN: 1765,
+            SON: 2187,
+            TAB: 1321,
+            TAMPS: 1765,
+            TLAX: 543,
+            VER: 3098,
+            YUC: 1321,
+            ZAC: 765,
+          },
+          Neurologia: {
+            AGS: 1321,
+            BC: 2543,
+            BCS: 765,
+            CAMP: 1454,
+            COAH: 1987,
+            COL: 654,
+            CHIS: 2187,
+            CHIH: 2876,
+            CDMX: 4654,
+            DGO: 1321,
+            GTO: 2543,
+            GRO: 2187,
+            HGO: 1454,
+            JAL: 3432,
+            MEX: 4321,
+            MICH: 2543,
+            MOR: 876,
+            NAY: 765,
+            NL: 2876,
+            OAX: 1987,
+            PUE: 2543,
+            QRO: 1321,
+            QROO: 876,
+            SLP: 1454,
+            SIN: 1987,
+            SON: 2543,
+            TAB: 1454,
+            TAMPS: 1987,
+            TLAX: 654,
+            VER: 3432,
+            YUC: 1454,
+            ZAC: 876,
+          },
+        },
+        2026: {
+          Cardiologia: {
+            AGS: 1454,
+            BC: 3432,
+            BCS: 1098,
+            CAMP: 1987,
+            COAH: 2432,
+            COL: 987,
+            CHIS: 2876,
+            CHIH: 3567,
+            CDMX: 5876,
+            DGO: 1654,
+            GTO: 3432,
+            GRO: 2432,
+            HGO: 1987,
+            JAL: 4321,
+            MEX: 5765,
+            MICH: 3567,
+            MOR: 1321,
+            NAY: 987,
+            NL: 3567,
+            OAX: 2432,
+            PUE: 3432,
+            QRO: 1454,
+            QROO: 1098,
+            SLP: 1987,
+            SIN: 2432,
+            SON: 3432,
+            TAB: 1654,
+            TAMPS: 2187,
+            TLAX: 987,
+            VER: 4876,
+            YUC: 1987,
+            ZAC: 1321,
+          },
+          Traumatologia: {
+            AGS: 1098,
+            BC: 2432,
+            BCS: 765,
+            CAMP: 1321,
+            COAH: 1987,
+            COL: 654,
+            CHIS: 2187,
+            CHIH: 2876,
+            CDMX: 4654,
+            DGO: 1321,
+            GTO: 2187,
+            GRO: 2876,
+            HGO: 1321,
+            JAL: 3432,
+            MEX: 4321,
+            MICH: 2432,
+            MOR: 876,
+            NAY: 765,
+            NL: 2876,
+            OAX: 1987,
+            PUE: 2432,
+            QRO: 1098,
+            QROO: 876,
+            SLP: 1454,
+            SIN: 1987,
+            SON: 2432,
+            TAB: 1454,
+            TAMPS: 1987,
+            TLAX: 654,
+            VER: 3432,
+            YUC: 1454,
+            ZAC: 876,
+          },
+          Neurologia: {
+            AGS: 1454,
+            BC: 2876,
+            BCS: 876,
+            CAMP: 1654,
+            COAH: 2187,
+            COL: 765,
+            CHIS: 2432,
+            CHIH: 3210,
+            CDMX: 4987,
+            DGO: 1454,
+            GTO: 2876,
+            GRO: 2432,
+            HGO: 1654,
+            JAL: 3765,
+            MEX: 4654,
+            MICH: 2876,
+            MOR: 987,
+            NAY: 876,
+            NL: 3210,
+            OAX: 2187,
+            PUE: 2876,
+            QRO: 1454,
+            QROO: 987,
+            SLP: 1654,
+            SIN: 2187,
+            SON: 2876,
+            TAB: 1654,
+            TAMPS: 2187,
+            TLAX: 765,
+            VER: 3765,
+            YUC: 1654,
+            ZAC: 987,
+          },
+        },
+      };
+
+      // Códigos de estados de México y sus nombres completos
+      const estados = {
+        AGS: "Aguascalientes",
+        BC: "Baja California",
+        BCS: "Baja California Sur",
+        CAMP: "Campeche",
+        COAH: "Coahuila",
+        COL: "Colima",
+        CHIS: "Chiapas",
+        CHIH: "Chihuahua",
+        CDMX: "Ciudad de México",
+        DGO: "Durango",
+        GTO: "Guanajuato",
+        GRO: "Guerrero",
+        HGO: "Hidalgo",
+        JAL: "Jalisco",
+        MEX: "Estado de México",
+        MICH: "Michoacán",
+        MOR: "Morelos",
+        NAY: "Nayarit",
+        NL: "Nuevo León",
+        OAX: "Oaxaca",
+        PUE: "Puebla",
+        QRO: "Querétaro",
+        QROO: "Quintana Roo",
+        SLP: "San Luis Potosí",
+        SIN: "Sinaloa",
+        SON: "Sonora",
+        TAB: "Tabasco",
+        TAMPS: "Tamaulipas",
+        TLAX: "Tlaxcala",
+        VER: "Veracruz",
+        YUC: "Yucatán",
+        ZAC: "Zacatecas",
+      };
+
+      // GeoJSON simplificado de México (contiene solo la geometría de los estados)
+      const mexicoGeoJson = {
+        type: "FeatureCollection",
+        features: [
+          {
+            type: "Feature",
+            properties: { code: "AGS", name: "Aguascalientes" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-102.5, 22.0],
+                  [-102.0, 22.0],
+                  [-102.0, 21.5],
+                  [-102.5, 21.5],
+                  [-102.5, 22.0],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "BC", name: "Baja California" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-116.0, 32.0],
+                  [-115.0, 32.0],
+                  [-115.0, 31.0],
+                  [-116.0, 31.0],
+                  [-116.0, 32.0],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "BCS", name: "Baja California Sur" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-112.0, 26.0],
+                  [-111.0, 26.0],
+                  [-111.0, 25.0],
+                  [-112.0, 25.0],
+                  [-112.0, 26.0],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "CAMP", name: "Campeche" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-91.0, 19.0],
+                  [-90.0, 19.0],
+                  [-90.0, 18.0],
+                  [-91.0, 18.0],
+                  [-91.0, 19.0],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "COAH", name: "Coahuila" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-103.0, 28.0],
+                  [-102.0, 28.0],
+                  [-102.0, 27.0],
+                  [-103.0, 27.0],
+                  [-103.0, 28.0],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "COL", name: "Colima" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-104.0, 19.0],
+                  [-103.5, 19.0],
+                  [-103.5, 18.5],
+                  [-104.0, 18.5],
+                  [-104.0, 19.0],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "CHIS", name: "Chiapas" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-93.0, 17.0],
+                  [-92.0, 17.0],
+                  [-92.0, 16.0],
+                  [-93.0, 16.0],
+                  [-93.0, 17.0],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "CHIH", name: "Chihuahua" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-108.0, 29.0],
+                  [-107.0, 29.0],
+                  [-107.0, 28.0],
+                  [-108.0, 28.0],
+                  [-108.0, 29.0],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "CDMX", name: "Ciudad de México" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-99.2, 19.4],
+                  [-99.1, 19.4],
+                  [-99.1, 19.3],
+                  [-99.2, 19.3],
+                  [-99.2, 19.4],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "DGO", name: "Durango" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-105.0, 25.0],
+                  [-104.0, 25.0],
+                  [-104.0, 24.0],
+                  [-105.0, 24.0],
+                  [-105.0, 25.0],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "GTO", name: "Guanajuato" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-101.5, 21.0],
+                  [-101.0, 21.0],
+                  [-101.0, 20.5],
+                  [-101.5, 20.5],
+                  [-101.5, 21.0],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "GRO", name: "Guerrero" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-100.0, 18.0],
+                  [-99.0, 18.0],
+                  [-99.0, 17.0],
+                  [-100.0, 17.0],
+                  [-100.0, 18.0],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "HGO", name: "Hidalgo" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-99.0, 21.0],
+                  [-98.5, 21.0],
+                  [-98.5, 20.0],
+                  [-99.0, 20.0],
+                  [-99.0, 21.0],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "JAL", name: "Jalisco" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-104.0, 21.0],
+                  [-103.0, 21.0],
+                  [-103.0, 20.0],
+                  [-104.0, 20.0],
+                  [-104.0, 21.0],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "MEX", name: "Estado de México" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-100.0, 20.0],
+                  [-99.0, 20.0],
+                  [-99.0, 19.0],
+                  [-100.0, 19.0],
+                  [-100.0, 20.0],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "MICH", name: "Michoacán" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-102.0, 20.0],
+                  [-101.0, 20.0],
+                  [-101.0, 19.0],
+                  [-102.0, 19.0],
+                  [-102.0, 20.0],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "MOR", name: "Morelos" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-99.2, 19.0],
+                  [-98.8, 19.0],
+                  [-98.8, 18.6],
+                  [-99.2, 18.6],
+                  [-99.2, 19.0],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "NAY", name: "Nayarit" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-105.5, 22.0],
+                  [-105.0, 22.0],
+                  [-105.0, 21.0],
+                  [-105.5, 21.0],
+                  [-105.5, 22.0],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "NL", name: "Nuevo León" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-100.5, 26.0],
+                  [-100.0, 26.0],
+                  [-100.0, 25.0],
+                  [-100.5, 25.0],
+                  [-100.5, 26.0],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "OAX", name: "Oaxaca" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-97.0, 18.0],
+                  [-96.0, 18.0],
+                  [-96.0, 17.0],
+                  [-97.0, 17.0],
+                  [-97.0, 18.0],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "PUE", name: "Puebla" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-98.5, 19.5],
+                  [-97.5, 19.5],
+                  [-97.5, 18.5],
+                  [-98.5, 18.5],
+                  [-98.5, 19.5],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "QRO", name: "Querétaro" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-100.5, 21.0],
+                  [-100.0, 21.0],
+                  [-100.0, 20.5],
+                  [-100.5, 20.5],
+                  [-100.5, 21.0],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "QROO", name: "Quintana Roo" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-88.0, 21.0],
+                  [-87.0, 21.0],
+                  [-87.0, 20.0],
+                  [-88.0, 20.0],
+                  [-88.0, 21.0],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "SLP", name: "San Luis Potosí" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-101.5, 23.0],
+                  [-101.0, 23.0],
+                  [-101.0, 22.0],
+                  [-101.5, 22.0],
+                  [-101.5, 23.0],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "SIN", name: "Sinaloa" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-108.0, 25.0],
+                  [-107.0, 25.0],
+                  [-107.0, 24.0],
+                  [-108.0, 24.0],
+                  [-108.0, 25.0],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "SON", name: "Sonora" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-112.0, 30.0],
+                  [-111.0, 30.0],
+                  [-111.0, 29.0],
+                  [-112.0, 29.0],
+                  [-112.0, 30.0],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "TAB", name: "Tabasco" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-93.0, 18.5],
+                  [-92.0, 18.5],
+                  [-92.0, 17.5],
+                  [-93.0, 17.5],
+                  [-93.0, 18.5],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "TAMPS", name: "Tamaulipas" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-99.0, 25.0],
+                  [-98.0, 25.0],
+                  [-98.0, 24.0],
+                  [-99.0, 24.0],
+                  [-99.0, 25.0],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "TLAX", name: "Tlaxcala" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-98.2, 19.5],
+                  [-98.0, 19.5],
+                  [-98.0, 19.3],
+                  [-98.2, 19.3],
+                  [-98.2, 19.5],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "VER", name: "Veracruz" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-97.5, 20.5],
+                  [-96.5, 20.5],
+                  [-96.5, 19.5],
+                  [-97.5, 19.5],
+                  [-97.5, 20.5],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "YUC", name: "Yucatán" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-89.5, 21.5],
+                  [-88.5, 21.5],
+                  [-88.5, 20.5],
+                  [-89.5, 20.5],
+                  [-89.5, 21.5],
+                ],
+              ],
+            },
+          },
+          {
+            type: "Feature",
+            properties: { code: "ZAC", name: "Zacatecas" },
+            geometry: {
+              type: "Polygon",
+              coordinates: [
+                [
+                  [-103.5, 23.5],
+                  [-103.0, 23.5],
+                  [-103.0, 23.0],
+                  [-103.5, 23.0],
+                  [-103.5, 23.5],
+                ],
+              ],
+            },
+          },
+        ],
+      };
+
+      // Inicialización del mapa
+      const map = L.map("map").setView([23.6345, -102.5528], 5);
+
+      // Añadir capa base de OpenStreetMap
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }).addTo(map);
+
+      // Variables globales para el estado actual
+      let currentYear = "2024";
+      let currentCause = "Cardiologia";
+      let currentGeoJsonLayer = null;
+
+      // Función para obtener el color según el valor
+      function getColor(value, min, max) {
+        // Normalizar el valor entre 0 y 1
+        const normalized = (value - min) / (max - min);
+
+        // Definir colores en HSL (rojo a azul)
+        const hue = (1 - normalized) * 240; // 0 (rojo) a 240 (azul)
+        return `hsl(${hue}, 100%, 50%)`;
+      }
+
+      // Función para actualizar el mapa según los filtros
+      function updateMap() {
+        // Eliminar capa anterior si existe
+        if (currentGeoJsonLayer) {
+          map.removeLayer(currentGeoJsonLayer);
+        }
+
+        // Obtener datos actuales
+        const data = deathData[currentYear][currentCause];
+
+        // Encontrar valores mínimo y máximo para la escala de colores
+        const values = Object.values(data);
+        const min = Math.min(...values);
+        const max = Math.max(...values);
+
+        // Crear una capa GeoJSON con estilo basado en los datos
+        currentGeoJsonLayer = L.geoJson(mexicoGeoJson, {
+          style: function (feature) {
+            const stateCode = feature.properties.code;
+            const deaths = data[stateCode] || 0;
+            return {
+              fillColor: getColor(deaths, min, max),
+              weight: 1,
+              opacity: 1,
+              color: "white",
+              fillOpacity: 0.7,
+            };
+          },
+          onEachFeature: function (feature, layer) {
+            const stateCode = feature.properties.code;
+            const stateName = estados[stateCode];
+            const deaths = data[stateCode] || 0;
+
+            // Tooltip al pasar el ratón
+            layer.bindTooltip(`
+                        <b>${stateName}</b><br>
+                        Muertes: ${deaths.toLocaleString()}
+                    `);
+
+            // Popup al hacer clic
+            layer.bindPopup(`
+                        <div style="text-align:center">
+                            <h3>${stateName}</h3>
+                            <p style="font-size:1.5rem;color:${getColor(
+                              deaths,
+                              min,
+                              max
+                            )};font-weight:bold">
+                                ${deaths.toLocaleString()} muertes
+                            </p>
+                            <p><b>Año:</b> ${currentYear}</p>
+                            <p><b>Causa:</b> ${currentCause}</p>
+                        </div>
+                    `);
+
+            // Evento para mostrar información en el panel lateral
+            layer.on("click", function () {
+              document.querySelector(".info-content").innerHTML = `
+                            <b>${stateName}</b><br>
+                            Muertes (${currentCause}, ${currentYear}): <b>${deaths.toLocaleString()}</b>
+                        `;
+            });
+          },
+        }).addTo(map);
+
+        // Actualizar leyenda
+        document.querySelector(
+          ".legend-scale"
+        ).style.background = `linear-gradient(to right, ${getColor(
+          min,
+          min,
+          max
+        )}, ${getColor(max, min, max)})`;
+
+        document.querySelector(".legend-labels").innerHTML = `
+                <span>${min.toLocaleString()}</span>
+                <span>${max.toLocaleString()}</span>
+            `;
+      }
+
+      // Eventos para los filtros
+      document
+        .getElementById("year-select")
+        .addEventListener("change", function () {
+          currentYear = this.value;
+          updateMap();
+        });
+
+      document
+        .getElementById("cause-select")
+        .addEventListener("change", function () {
+          currentCause = this.value;
+          updateMap();
+        });
+
+      // Inicializar el mapa
+      updateMap();
+    </script>
+  </body>
+</html>
