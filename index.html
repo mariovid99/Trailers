@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
   <head>
     <meta charset="UTF-8" />
@@ -767,43 +767,49 @@
       <div id="predictiveMaintenanceView" style="display: none">
         <h2 class="mb-4"><i class="fas fa-robot me-2"></i> IA Predictiva</h2>
 
-        <div class="row mb-4">
-          <div class="col-md-3">
-            <div class="kpi-card">
-              <i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i>
-              <div class="kpi-value">12</div>
-              <div class="kpi-title">Alertas Críticas</div>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="kpi-card">
-              <i class="fas fa-clock fa-2x text-warning mb-2"></i>
-              <div class="kpi-value">18</div>
-              <div class="kpi-title">Mantenimientos Pendientes</div>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="kpi-card">
-              <i class="fas fa-dollar-sign fa-2x text-success mb-2"></i>
-              <div class="kpi-value">$42K</div>
-              <div class="kpi-title">Ahorro Estimado</div>
-            </div>
-          </div>
-          <div class="col-md-3">
-            <div class="kpi-card">
-              <i class="fas fa-percentage fa-2x text-primary mb-2"></i>
-              <div class="kpi-value">93%</div>
-              <div class="kpi-title">Precisión del Modelo</div>
-            </div>
-          </div>
-        </div>
-
+        <!-- Sensor Monitor Card -->
         <div class="card mb-4">
-          <div class="card-header">
-            <h5 class="mb-0">Predicciones de Fallas</h5>
+          <div
+            class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2"
+          >
+            <h5 class="mb-0">
+              <i class="fas fa-wave-square me-2"></i> Monitor de Sensores del
+              Motor
+              <span
+                class="badge bg-secondary ms-2 fw-normal"
+                style="font-size: 0.72rem; vertical-align: middle"
+                >Intervalo: 5 min</span
+              >
+            </h5>
+            <div class="d-flex align-items-center gap-2">
+              <label class="fw-semibold text-muted small mb-0">Sensor:</label>
+              <select
+                id="sensorSelector"
+                class="form-select form-select-sm"
+                style="min-width: 300px"
+              >
+                <option value="temp_refrigerante">
+                  Temperatura del Refrigerante (°C)
+                </option>
+                <option value="presion_aceite">
+                  Presión de Aceite del Motor (psi)
+                </option>
+                <option value="rpm_motor">RPM del Motor (rpm)</option>
+                <option value="temp_aceite">Temperatura del Aceite (°C)</option>
+                <option value="consumo_combustible">
+                  Consumo Instantáneo de Combustible (L/h)
+                </option>
+                <option value="relacion_aire_combustible">
+                  Relación Aire-Combustible (λ/AFR)
+                </option>
+              </select>
+            </div>
           </div>
           <div class="card-body">
-            <div id="failurePredictionsChart" style="height: 350px"></div>
+            <div id="sensorInfoRow" class="row g-3 mb-4"></div>
+            <div style="position: relative; height: 340px">
+              <canvas id="sensorChart"></canvas>
+            </div>
           </div>
         </div>
 
@@ -1908,7 +1914,7 @@
 
         // Inicializar tooltips de Bootstrap
         const tooltipTriggerList = [].slice.call(
-          document.querySelectorAll('[data-bs-toggle="tooltip"]')
+          document.querySelectorAll('[data-bs-toggle="tooltip"]'),
         );
         tooltipTriggerList.map((tooltipTriggerEl) => {
           return new bootstrap.Tooltip(tooltipTriggerEl);
@@ -1975,7 +1981,7 @@
               theme:
                 document.documentElement.getAttribute("data-theme") || "light",
             },
-          }
+          },
         );
         fleetHealthChart.render();
 
@@ -2022,75 +2028,191 @@
                 },
               },
             },
-          }
+          },
         );
         costSavingsChart.render();
 
-        // Gráfico de predicciones de fallas
-        const failurePredictionsChart = new ApexCharts(
-          document.querySelector("#failurePredictionsChart"),
-          {
-            series: [
-              {
-                name: "Probabilidad de Falla",
-                data: [87, 65, 58, 42, 35, 28, 22],
-              },
-            ],
-            chart: {
-              type: "bar",
-              height: 350,
-              toolbar: {
-                show: false,
-              },
-            },
-            plotOptions: {
-              bar: {
-                borderRadius: 8,
-                horizontal: false,
-                columnWidth: "55%",
-              },
-            },
-            dataLabels: {
-              enabled: false,
-            },
-            colors: ["#10232A"],
-            xaxis: {
-              categories: [
-                "Frenos",
-                "Transmisión",
-                "Neumáticos",
-                "Suspensión",
-                "Motor",
-                "Eléctrico",
-                "Refrigeración",
-              ],
-              labels: {
-                style: {
-                  colors: "var(--gray)",
-                },
-              },
-            },
-            yaxis: {
-              max: 100,
-              labels: {
-                style: {
-                  colors: "var(--gray)",
-                },
-                formatter: function (val) {
-                  return val + "%";
-                },
-              },
-            },
-            grid: {
-              borderColor: "rgba(0,0,0,0.05)",
-            },
-            tooltip: {
-              theme:
-                document.documentElement.getAttribute("data-theme") || "light",
-            },
+        // ───── Monitor de Sensores del Motor ─────
+        let sensorChartInstance = null;
+        let sensorDataJson = null;
+
+        async function loadSensorData() {
+          try {
+            const resp = await fetch("sensor_data.json");
+            sensorDataJson = await resp.json();
+            renderSensorChart(document.getElementById("sensorSelector").value);
+          } catch (e) {
+            console.error("No se pudo cargar sensor_data.json", e);
           }
-        );
-        failurePredictionsChart.render();
+        }
+
+        function renderSensorChart(sensorKey) {
+          if (!sensorDataJson) return;
+          const sensor = sensorDataJson.sensors[sensorKey];
+          const timestamps = sensorDataJson.timestamps;
+
+          // Última lectura
+          const lastVal = sensor.values[sensor.values.length - 1];
+          const avg = (
+            sensor.values.reduce((a, b) => a + b, 0) / sensor.values.length
+          ).toFixed(1);
+          const maxVal = Math.max(...sensor.values);
+          const inRange = sensor.values.filter(
+            (v) => v >= sensor.rangeMin && v <= sensor.rangeMax,
+          ).length;
+          const pctOk = ((inRange / sensor.values.length) * 100).toFixed(0);
+
+          // Info row
+          const infoRow = document.getElementById("sensorInfoRow");
+          infoRow.innerHTML = `
+            <div class="col-auto">
+              <div class="rounded-3 px-3 py-2 border" style="background:${sensor.color}11; border-color:${sensor.color}44 !important;">
+                <div class="small text-muted mb-1">Valor Actual</div>
+                <div class="fw-bold fs-5" style="color:${sensor.color}">${lastVal} <span class="fs-6">${sensor.unit}</span></div>
+              </div>
+            </div>
+            <div class="col-auto">
+              <div class="rounded-3 px-3 py-2 border">
+                <div class="small text-muted mb-1">Promedio (4 h)</div>
+                <div class="fw-bold fs-5">${avg} <span class="fs-6">${sensor.unit}</span></div>
+              </div>
+            </div>
+            <div class="col-auto">
+              <div class="rounded-3 px-3 py-2 border">
+                <div class="small text-muted mb-1">Rango Normal</div>
+                <div class="fw-bold">${sensor.rangeMin} – ${sensor.rangeMax} ${sensor.unit}</div>
+              </div>
+            </div>
+            <div class="col-auto">
+              <div class="rounded-3 px-3 py-2 border">
+                <div class="small text-muted mb-1">Lecturas en Rango</div>
+                <div class="fw-bold ${pctOk >= 90 ? "text-success" : pctOk >= 70 ? "text-warning" : "text-danger"}">${pctOk}%</div>
+              </div>
+            </div>
+            <div class="col-auto">
+              <div class="rounded-3 px-3 py-2 border">
+                <div class="small text-muted mb-1">Riesgo Monitoreado</div>
+                <div class="fw-semibold text-warning small">${sensor.riskLabel}</div>
+              </div>
+            </div>`;
+
+          // Chart
+          const ctx = document.getElementById("sensorChart");
+          if (!ctx) return;
+
+          if (sensorChartInstance) {
+            sensorChartInstance.destroy();
+            sensorChartInstance = null;
+          }
+
+          const isDark =
+            document.documentElement.getAttribute("data-theme") === "dark";
+          const gridColor = isDark
+            ? "rgba(255,255,255,0.06)"
+            : "rgba(0,0,0,0.05)";
+          const tickColor = isDark ? "#94a3b8" : "#64748b";
+
+          sensorChartInstance = new Chart(ctx, {
+            type: "line",
+            data: {
+              labels: timestamps,
+              datasets: [
+                {
+                  label: sensor.name,
+                  data: sensor.values,
+                  borderColor: sensor.color,
+                  backgroundColor: sensor.color + "25",
+                  borderWidth: 2.5,
+                  tension: 0.35,
+                  fill: true,
+                  pointRadius: 3,
+                  pointBackgroundColor: sensor.color,
+                  pointHoverRadius: 6,
+                  pointHoverBackgroundColor: "#fff",
+                  pointHoverBorderColor: sensor.color,
+                  pointHoverBorderWidth: 2,
+                },
+                {
+                  label: `Límite Sup. (${sensor.rangeMax} ${sensor.unit})`,
+                  data: timestamps.map(() => sensor.rangeMax),
+                  borderColor: "#ef4444",
+                  borderDash: [7, 4],
+                  borderWidth: 1.5,
+                  pointRadius: 0,
+                  fill: false,
+                },
+                {
+                  label: `Límite Inf. (${sensor.rangeMin} ${sensor.unit})`,
+                  data: timestamps.map(() => sensor.rangeMin),
+                  borderColor: "#f59e0b",
+                  borderDash: [7, 4],
+                  borderWidth: 1.5,
+                  pointRadius: 0,
+                  fill: false,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              interaction: { mode: "index", intersect: false },
+              plugins: {
+                legend: {
+                  position: "top",
+                  labels: {
+                    boxWidth: 14,
+                    padding: 18,
+                    color: tickColor,
+                    font: { family: "Inter", size: 12 },
+                  },
+                },
+                tooltip: {
+                  backgroundColor: isDark ? "#1e293b" : "#fff",
+                  titleColor: isDark ? "#f8fafc" : "#0f172a",
+                  bodyColor: isDark ? "#94a3b8" : "#475569",
+                  borderColor: isDark
+                    ? "rgba(255,255,255,0.1)"
+                    : "rgba(0,0,0,0.1)",
+                  borderWidth: 1,
+                  padding: 10,
+                  callbacks: {
+                    label: (ctx) =>
+                      ` ${ctx.dataset.label}: ${ctx.parsed.y} ${sensor.unit}`,
+                  },
+                },
+              },
+              scales: {
+                x: {
+                  grid: { color: gridColor },
+                  ticks: {
+                    color: tickColor,
+                    maxTicksLimit: 12,
+                    font: { size: 11 },
+                  },
+                },
+                y: {
+                  grid: { color: gridColor },
+                  ticks: {
+                    color: tickColor,
+                    font: { size: 11 },
+                    callback: (v) => v + " " + sensor.unit,
+                  },
+                },
+              },
+            },
+          });
+        }
+
+        // Selector de sensor
+        const sensorSel = document.getElementById("sensorSelector");
+        if (sensorSel) {
+          sensorSel.addEventListener("change", function () {
+            renderSensorChart(this.value);
+          });
+        }
+
+        // Cargar datos del JSON
+        loadSensorData();
 
         // Gráfico de distribución de mantenimiento
         const maintenanceDistributionChart = new ApexCharts(
@@ -2115,7 +2237,7 @@
                 },
               },
             },
-          }
+          },
         );
         maintenanceDistributionChart.render();
       }
@@ -2151,8 +2273,8 @@
                         <td>
                             <div class="progress" style="height: 6px;">
                                 <div class="progress-bar ${progressClass}" style="width: ${
-            trailer.health
-          }%"></div>
+                                  trailer.health
+                                }%"></div>
                             </div>
                             <small>${trailer.health}%</small>
                         </td>
@@ -2293,7 +2415,7 @@
           L.marker(coords, { icon: icon })
             .addTo(map)
             .bindPopup(
-              `<b>#${trailer.id}</b><br>${trailer.model}<br>Salud: ${trailer.health}%`
+              `<b>#${trailer.id}</b><br>${trailer.model}<br>Salud: ${trailer.health}%`,
             );
         });
       }
@@ -2340,7 +2462,7 @@
           .getElementById("addMaintenanceBtn")
           .addEventListener("click", function () {
             const modal = new bootstrap.Modal(
-              document.getElementById("addMaintenanceModal")
+              document.getElementById("addMaintenanceModal"),
             );
             modal.show();
           });
@@ -2355,7 +2477,7 @@
               alert("Mantenimiento registrado exitosamente!");
 
               const modal = bootstrap.Modal.getInstance(
-                document.getElementById("addMaintenanceModal")
+                document.getElementById("addMaintenanceModal"),
               );
               modal.hide();
             } else {
@@ -2406,7 +2528,7 @@
             e.preventDefault();
             document
               .querySelector(
-                '.sidebar .nav-link[data-view="maintenanceHistoryView"]'
+                '.sidebar .nav-link[data-view="maintenanceHistoryView"]',
               )
               .click();
           });
@@ -2433,7 +2555,7 @@
         // Ocultar todas las vistas
         document
           .querySelectorAll(
-            "#dashboardContent, #trailerAnalysisView, #predictiveMaintenanceView, #maintenanceHistoryView, #routeHistoryView, #inventoryView, #techniciansView, #reportsView"
+            "#dashboardContent, #trailerAnalysisView, #predictiveMaintenanceView, #maintenanceHistoryView, #routeHistoryView, #inventoryView, #techniciansView, #reportsView",
           )
           .forEach((view) => {
             view.style.display = "none";
@@ -2454,9 +2576,8 @@
         if (!trailer) return;
 
         // Actualizar título del modal
-        document.getElementById(
-          "trailerModalTitle"
-        ).textContent = `Detalles de #${trailer.id}`;
+        document.getElementById("trailerModalTitle").textContent =
+          `Detalles de #${trailer.id}`;
 
         // Construir contenido del modal
         let sensorStatus = "";
@@ -2505,15 +2626,15 @@
                               sensor.status === "normal"
                                 ? "success"
                                 : sensor.status === "warning"
-                                ? "warning"
-                                : "danger"
+                                  ? "warning"
+                                  : "danger"
                             }">
                                 ${
                                   sensor.status === "normal"
                                     ? "Normal"
                                     : sensor.status === "warning"
-                                    ? "Advertencia"
-                                    : "Crítico"
+                                      ? "Advertencia"
+                                      : "Crítico"
                                 }
                             </span>
                         </div>
@@ -2541,13 +2662,13 @@
                         <div class="mb-3">
                             <label class="form-label text-muted">Último Mantenimiento</label>
                             <p class="fw-bold">${formatDate(
-                              trailer.lastMaintenance
+                              trailer.lastMaintenance,
                             )}</p>
                         </div>
                         <div class="mb-3">
                             <label class="form-label text-muted">Próximo Mantenimiento</label>
                             <p class="fw-bold">${formatDate(
-                              trailer.nextMaintenance
+                              trailer.nextMaintenance,
                             )}</p>
                         </div>
                         <div class="mb-3">
@@ -2576,7 +2697,7 @@
 
         // Mostrar modal
         const modal = new bootstrap.Modal(
-          document.getElementById("trailerModal")
+          document.getElementById("trailerModal"),
         );
         modal.show();
 
@@ -2614,8 +2735,8 @@
               trailer.health < 70
                 ? "#ef4444"
                 : trailer.health < 85
-                ? "#f59e0b"
-                : "#10b981",
+                  ? "#f59e0b"
+                  : "#10b981",
             ],
             xaxis: {
               categories: Array.from({ length: 20 }, (_, i) => `${i + 1} May`),
@@ -2644,7 +2765,7 @@
               theme:
                 document.documentElement.getAttribute("data-theme") || "light",
             },
-          }
+          },
         );
         trailerHealthChart.render();
       }
@@ -2721,19 +2842,19 @@
                                                 .status === "normal"
                                                 ? "success"
                                                 : trailer.sensorData.brakeTemp
-                                                    .status === "warning"
-                                                ? "warning"
-                                                : "danger"
+                                                      .status === "warning"
+                                                  ? "warning"
+                                                  : "danger"
                                             }">
                                                 ${
                                                   trailer.sensorData.brakeTemp
                                                     .status === "normal"
                                                     ? "Normal"
                                                     : trailer.sensorData
-                                                        .brakeTemp.status ===
-                                                      "warning"
-                                                    ? "Advertencia"
-                                                    : "Crítico"
+                                                          .brakeTemp.status ===
+                                                        "warning"
+                                                      ? "Advertencia"
+                                                      : "Crítico"
                                                 }
                                             </span>
                                         </span>
@@ -2744,9 +2865,9 @@
                                             .status === "normal"
                                             ? "success"
                                             : trailer.sensorData.brakeTemp
-                                                .status === "warning"
-                                            ? "warning"
-                                            : "danger"
+                                                  .status === "warning"
+                                              ? "warning"
+                                              : "danger"
                                         }" 
                                             style="width: ${
                                               trailer.sensorData.brakeTemp.value
@@ -2765,10 +2886,10 @@
                                                 .status === "normal"
                                                 ? "success"
                                                 : trailer.sensorData
-                                                    .tirePressure.status ===
-                                                  "warning"
-                                                ? "warning"
-                                                : "danger"
+                                                      .tirePressure.status ===
+                                                    "warning"
+                                                  ? "warning"
+                                                  : "danger"
                                             }">
                                                 ${
                                                   trailer.sensorData
@@ -2776,10 +2897,10 @@
                                                   "normal"
                                                     ? "Normal"
                                                     : trailer.sensorData
-                                                        .tirePressure.status ===
-                                                      "warning"
-                                                    ? "Advertencia"
-                                                    : "Crítico"
+                                                          .tirePressure
+                                                          .status === "warning"
+                                                      ? "Advertencia"
+                                                      : "Crítico"
                                                 }
                                             </span>
                                         </span>
@@ -2790,9 +2911,9 @@
                                             .status === "normal"
                                             ? "success"
                                             : trailer.sensorData.tirePressure
-                                                .status === "warning"
-                                            ? "warning"
-                                            : "danger"
+                                                  .status === "warning"
+                                              ? "warning"
+                                              : "danger"
                                         }" 
                                             style="width: ${
                                               trailer.sensorData.tirePressure
@@ -2812,19 +2933,19 @@
                                                 .status === "normal"
                                                 ? "success"
                                                 : trailer.sensorData.brakePad
-                                                    .status === "warning"
-                                                ? "warning"
-                                                : "danger"
+                                                      .status === "warning"
+                                                  ? "warning"
+                                                  : "danger"
                                             }">
                                                 ${
                                                   trailer.sensorData.brakePad
                                                     .status === "normal"
                                                     ? "Normal"
                                                     : trailer.sensorData
-                                                        .brakePad.status ===
-                                                      "warning"
-                                                    ? "Advertencia"
-                                                    : "Crítico"
+                                                          .brakePad.status ===
+                                                        "warning"
+                                                      ? "Advertencia"
+                                                      : "Crítico"
                                                 }
                                             </span>
                                         </span>
@@ -2835,9 +2956,9 @@
                                           "normal"
                                             ? "success"
                                             : trailer.sensorData.brakePad
-                                                .status === "warning"
-                                            ? "warning"
-                                            : "danger"
+                                                  .status === "warning"
+                                              ? "warning"
+                                              : "danger"
                                         }" 
                                             style="width: ${
                                               trailer.sensorData.brakePad.value
