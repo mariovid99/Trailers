@@ -2214,6 +2214,75 @@
         // Cargar datos del JSON
         loadSensorData();
 
+        // Gráfico de historial por tráiler
+        const maintenanceHistoryChart = new ApexCharts(
+          document.querySelector("#maintenanceHistoryChart"),
+          {
+            series: [
+              {
+                name: "Preventivo",
+                data: [4, 3, 5, 2],
+              },
+              {
+                name: "Predictivo",
+                data: [2, 3, 1, 2],
+              },
+              {
+                name: "Correctivo",
+                data: [1, 1, 2, 0],
+              },
+            ],
+            chart: {
+              type: "bar",
+              height: 300,
+              stacked: false,
+              toolbar: { show: false },
+            },
+            plotOptions: {
+              bar: {
+                borderRadius: 5,
+                columnWidth: "55%",
+                dataLabels: { position: "top" },
+              },
+            },
+            dataLabels: { enabled: false },
+            colors: ["#0802ea", "#f59e0b", "#ef4444"],
+            xaxis: {
+              categories: ["#MX-5482", "#US-9821", "#MX-3476", "#US-1287"],
+              labels: {
+                style: {
+                  colors: "var(--gray)",
+                  fontFamily: "Inter, sans-serif",
+                },
+              },
+            },
+            yaxis: {
+              title: {
+                text: "Nº de mantenimientos",
+                style: {
+                  color: "var(--gray)",
+                  fontFamily: "Inter, sans-serif",
+                },
+              },
+              labels: {
+                style: { colors: "var(--gray)" },
+                formatter: (v) => Math.round(v),
+              },
+            },
+            legend: {
+              position: "top",
+              fontFamily: "Inter, sans-serif",
+            },
+            grid: { borderColor: "rgba(0,0,0,0.05)" },
+            tooltip: {
+              theme:
+                document.documentElement.getAttribute("data-theme") || "light",
+              y: { formatter: (v) => v + " eventos" },
+            },
+          },
+        );
+        maintenanceHistoryChart.render();
+
         // Gráfico de distribución de mantenimiento
         const maintenanceDistributionChart = new ApexCharts(
           document.querySelector("#maintenanceDistributionChart"),
